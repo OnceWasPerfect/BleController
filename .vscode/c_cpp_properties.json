@@ -1,0 +1,14 @@
+{
+    "configurations": [
+        {
+            "name": "Win32",
+            "includePath": [
+                "C:\\Users\\oncew\\AppData\\Local\\Arduino15\\packages\\adafruit\\hardware\\avr\\1.4.13\\**",
+                "C:\\Users\\oncew\\Documents\\Arduino\\libraries\\**",
+                "C:\\Program Files (x86)\\Arduino\\**"
+            ],
+            "forcedInclude": []
+        }
+    ],
+    "version": 4
+}
