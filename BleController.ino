@@ -23,7 +23,7 @@ void setup()
 {
   //Assign button pins
   pinMode(5, INPUT_PULLUP);
-  pinMode(12, INPUT_PULLUP);
+  pinMode(12, INPUT_PULLUP);  //test
 
   //Set buttons to active low
   scrollButton.setActiveLogic(LOW);
