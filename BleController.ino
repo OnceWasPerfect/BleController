@@ -71,7 +71,7 @@ void loop()
   }
 
   //checkmovement functions return 0,1, or -1, then multiply by the range
-  int xDistance = checkXmovement() * range;  //test comment 
+  int xDistance = checkXmovement() * range;  
   int yDistance = checkYmovement() * range;  //test comment
 
   //Convert movement to string
