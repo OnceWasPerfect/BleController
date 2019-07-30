@@ -1,5 +1,3 @@
-//Test from master online
-
 #include "BluefruitRoutines.h"
 #include <Wire.h>
 #include <PushButton.h>
