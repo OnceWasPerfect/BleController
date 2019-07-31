@@ -5,11 +5,11 @@
 #include <Adafruit_LIS3DH.h>
 #include <Adafruit_Sensor.h>
 
-#define range 7  //How far the mouse moves
-#define responseDelay 5  //How often the loop runs
-#define averageFactor 20  //How many captures per movement check
-#define calibrationFactor 200  //How many captures for calibration
-#define deadZone 200  //How far before movement registered
+#define RANGE 7  //How far the mouse moves
+#define RESPONSEDELAY 5  //How often the loop runs
+#define AVERAGEFACTOR 20  //How many captures per movement check
+#define CALIBRATIONFACTOR 200  //How many captures for calibration
+#define DEADZONE 200  //How far before movement registered
 
 bool bolScroll = false;  //Is scroll mode active
 PushButton scrollButton(5);  //Scroll button
@@ -35,7 +35,7 @@ void setup()
   //Begin acc
   lis.begin(0x18);
   
-  //Set Range for Acc
+  //Set RANGE for Acc
   lis.setRange(LIS3DH_RANGE_16_G);   // 2, 4, 8 or 16 G!
 
   //Calibrate X and Y axis
@@ -73,9 +73,9 @@ void loop()
     }
   }
 
-  //checkmovement functions return 0,1, or -1, then multiply by the range
-  int xDistance = checkXmovement() * range;
-  int yDistance = checkYmovement() * range;
+  //checkmovement functions return 0,1, or -1, then multiply by the RANGE
+  int xDistance = checkXmovement() * RANGE;
+  int yDistance = checkYmovement() * RANGE;
 
   //Keep track of movement for later recenter
   xLocation = xLocation + xDistance;
@@ -101,7 +101,7 @@ void loop()
     }
   }
   
-  delay(responseDelay);
+  delay(RESPONSEDELAY);
 }
 
 //Average the x movement to reduce jitters
@@ -110,13 +110,15 @@ int averageX ()
   int average = 0;
   long total = 0L;
 
-  for(int i = 0; i < averageFactor; i++)
+  for(int i = 0; i < AVERAGEFACTOR
+; i++)
   {
     lis.read();  //Get new reading from acc
     total = total + lis.x;  //Sum the readings
   }
   
-  average = total / averageFactor;  //Get the average
+  average = total / AVERAGEFACTOR
+;  //Get the average
   return average;
 }
 
@@ -126,13 +128,15 @@ int averageY ()
   int average = 0;
   long total = 0L;
 
-  for(int i = 0; i < averageFactor; i++)
+  for(int i = 0; i < AVERAGEFACTOR
+; i++)
   {
     lis.read();  //Get new reading from acc
     total = total + lis.y;  //Sum the readings
   }
   
-  average = total / averageFactor;  //Get the average
+  average = total / AVERAGEFACTOR
+;  //Get the average
   return average;  
 }
 
@@ -142,15 +146,15 @@ void calibrate ()
   long xTotal = 0L;
   long yTotal = 0L;
 
-  for (int i = 0; i < calibrationFactor; i++)  //Sample location calibrationFactor times
+  for (int i = 0; i < CALIBRATIONFACTOR; i++)  //Sample location CALIBRATIONFACTOR times
   {
     lis.read();  //Get new reading from acc
     xTotal = xTotal + lis.x;  //Total the x locations
     yTotal = yTotal + lis.y;  //Total the y locations
   }
 
-  xCalibrated = xTotal / calibrationFactor; //Average the x location
-  yCalibrated = yTotal / calibrationFactor;  //Average the y location
+  xCalibrated = xTotal / CALIBRATIONFACTOR; //Average the x location
+  yCalibrated = yTotal / CALIBRATIONFACTOR;  //Average the y location
 
   String movement = convertMovement(-xLocation,-yLocation);  //Use the negative of the location to move back to center
   ble.print("AT+BleHidMouseMove=");  //Move the cursor 
@@ -164,7 +168,7 @@ int checkXmovement()
   long difference = newX - xCalibrated;  //Calculate movement from calibrated
 
   //check to see if movment
-  if (abs(difference) > deadZone)  //Movement greater than deadzone
+  if (abs(difference) > DEADZONE)  //Movement greater than deadzone
   {
     if(newX > xCalibrated) //Moved right
     {
@@ -188,7 +192,7 @@ int checkYmovement()
   long difference = newY - yCalibrated;  //Calculate movement from calibrated
 
   //check to see if movment
-  if (abs(difference) > deadZone)  //Movement greater than deadzon
+  if (abs(difference) > DEADZONE)  //Movement greater than deadzon
   {
     if(newY > yCalibrated)  //Moved down
     {
