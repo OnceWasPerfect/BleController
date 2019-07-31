@@ -25,3 +25,20 @@ Wiring is fairly simple.  You will need four wires connecting the Feather to the
 * Connect the other lead to Ground
 
 ![Wiring Diagram](images/wiring.png)
+
+## Coding
+### Concept
+The Accelerometer is acting much like a d-pad.  I'm not concerned with the amount of movement or the specific angle, just that it is tilted left/right or up/down.  There also needs to be a resting position that the user can keep the Accelerometer at in order to stop cursor movement.  The user also needs a way simulate a finger drag.  This can be done with just the main button and moving the Accelerometer but it is slow.  To facilitate faster scrolling of long forums and web pages (Facebook) a scroll mode is implemented. While in this mode the cursor stops moving and the entire page is moved up/down or left/right with the movement of the Accelerometer. 
+
+### Defines
+```c++
+#define RANGE 7  //How far the mouse moves
+#define RESPONSEDELAY 5  //How often the loop runs
+#define AVERAGEFACTOR 20  //How many captures per movement check
+#define CALIBRATIONFACTOR 200  //How many captures for calibration
+#define DEADZONE 200  //How far before movement registered
+```
+
+The `RANGE` constant determines how far the mouse moves with each move command (essentially how fast the cursor moves).  `RESPONSEDELAY` is a little delay at the end of the loop before it reruns this affects how fast the program is overall (may not be strickly necessary at this point).  The `AVERAGEFACTOR` constant determines how many data points to get from the Accelerometer before checking for movement.  The Accelerometer is quite noisy so several captures are taken and averaged out before determining its location.  `CALIBRATIONFACTOR` is how many times we poll the Accelerometer to determine a resting position (see `calibration()` function).  Finally `DEADZONE` is a threshhold the Accelerometer must pass before we register a movement.  This is needed so that when the user is at rest the cursor will stay in one location instead of jumping around.  
+
+### Functions
