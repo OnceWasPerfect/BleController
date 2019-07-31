@@ -56,9 +56,10 @@ Adafruit_LIS3DH lis = Adafruit_LIS3DH();  //Create acc object
 int xCalibrated = 0;  //Base value for x
 int yCalibrated = 0;  //Base value for y
 bool bolScroll = false;  //Is scroll mode active
+Adafruit_BluefruitLE_SPI ble(BLUEFRUIT_SPI_CS, BLUEFRUIT_SPI_IRQ, BLUEFRUIT_SPI_RST);  //Bluetooth object
 ```
 
-There are two buttons for the user to manipulate `scrollButton` and `mainbutton`.  `mainButton` acts like left click on a mouse, while `scrollButton` is used to toggle in and out of scroll mode.  A switch would also work well for `scrollButton` but my user doesn't have the coordination to manipulate a switch.  `lis` is the Accelerometer object.  This is used to get all the movement data fromt he Accelerometer.  The `xCalibrated` and `yCalibrated` variables are used to hold the resting (no cursor movement) Accelerometer values.  Finally `bolScroll` keeps track of whether the user is in scroll mode or not.  
+There are two buttons for the user to manipulate `scrollButton` and `mainbutton`.  `mainButton` acts like left click on a mouse, while `scrollButton` is used to toggle in and out of scroll mode.  A switch would also work well for `scrollButton` but my user doesn't have the coordination to manipulate a switch.  `lis` is the Accelerometer object.  This is used to get all the movement data from the Accelerometer.  The `xCalibrated` and `yCalibrated` variables are used to hold the resting (no cursor movement) Accelerometer values.  `bolScroll` keeps track of whether the user is in scroll mode or not.  Finally the `ble` object is created in `BluefruitRoutines.h` and it is used to actually send the commands to the tablet. 
 
 ### Functions
 In order to facilitate easier future transitions as movement degrades and new ways of controlling the cursor have to be devised, I've tried to keep the code modular and use functions when I can.  
@@ -71,3 +72,5 @@ int checkXmovement();
 int checkYmovement();
 String convertMovement(int x, int y);
 ```
+
+The `averageX()` and `averageY()` functions pull data from the `lis` object multiple times (`AVERAGEFACTOR`) and then average that data to determine the Accelerometers position.  This is done to reduce the noise of the Accelerometer data. The `calibrate()` function pulls data from the `lis` object `CALIBRATIONFACTOR` number of times and averages that all together to determine a resting position for the sensor.  It is called during `setup()` and can be called again by pressing `mainButton` and `scrollbutton` simultaneously.  The user may want to recalibrate if the cursor starts to drift while in a resting position.  The `checkXmovement()` and `checkYmovement()` functions are called to determine if there is enough movement in the Accelerometer to warrant a cursor movement.  It does this by calling the `averageX()` or `averageY()` function to get the current Accelerometer position.  It then compares that to `xCalibrated` or `yCalibrated` (the resting position) and if the difference between the new location and the calibrated location is greater than `DEADZONE` it returns a 1 or -1 depending on the direction of the movement, or a 0 if no movement.  In the main `loop()` that returned value is then multiplied by `RANGE` to determine the amount of cursor movement.  Finally the `convertMovement()` function takes the amount of movement wanted for the cursor and converts it into a string to be used by the bluetooth object (`ble`) and sent to the tablet to make the cursor actually move.  
