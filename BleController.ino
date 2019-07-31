@@ -213,4 +213,3 @@ String convertMovement(int x, int y)
   movement += String(y);  //Convert yDistance to string and add it to the string
   return movement;
 }
-//Test
