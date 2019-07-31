@@ -11,6 +11,9 @@ The code by this time was getting a little large and I didn't want to break some
 
 With any luck this project may help another disabled person have some entertainment.  
 
+## Pictures of Current Implementation
+<img src="images/user.jpg" width="30%"> <img src="images/setup.jpg" width="30%"> <img src="images/main.jpg" width="30%"> <img src="images/foot.jpg" width="30%"> <img src="images/back.jpg" width="30%">
+
 ## Wiring
 
 Wiring is fairly simple.  You will need four wires connecting the Feather to the Accelerometer (two if you want to give the Accelerometer its own power supply) and four wires to connect the buttons to the Feather (two for each button).  I used a Cat5 cable between the main housing box (which has the buttons and the Feather) and the foot control box (which has the Accelerometer) because I had keystones I could fasten to the boxes and I wanted a quick way to disconnect the Accelerometer from the rest of the system.  
