@@ -74,3 +74,83 @@ String convertMovement(int x, int y);
 ```
 
 The `averageX()` and `averageY()` functions pull data from the `lis` object multiple times (`AVERAGEFACTOR`) and then average that data to determine the Accelerometers position.  This is done to reduce the noise of the Accelerometer data. The `calibrate()` function pulls data from the `lis` object `CALIBRATIONFACTOR` number of times and averages that all together to determine a resting position for the sensor.  It is called during `setup()` and can be called again by pressing `mainButton` and `scrollbutton` simultaneously.  The user may want to recalibrate if the cursor starts to drift while in a resting position.  The `checkXmovement()` and `checkYmovement()` functions are called to determine if there is enough movement in the Accelerometer to warrant a cursor movement.  It does this by calling the `averageX()` or `averageY()` function to get the current Accelerometer position.  It then compares that to `xCalibrated` or `yCalibrated` (the resting position) and if the difference between the new location and the calibrated location is greater than `DEADZONE` it returns a 1 or -1 depending on the direction of the movement, or a 0 if no movement.  In the main `loop()` that returned value is then multiplied by `RANGE` to determine the amount of cursor movement.  Finally the `convertMovement()` function takes the amount of movement wanted for the cursor and converts it into a string to be used by the bluetooth object (`ble`) and sent to the tablet to make the cursor actually move.  
+
+### `setup()`
+
+There isn't a lot to do in the setup.  First the pins for the buttons are setup as pull up inputs.  The buttons are set to active low logic for the PushButton library.  The Accelerometer is started and its sensitivity range is set.  It is then calibrated and lastly the bluetooth object is initialized. 
+
+```c++
+//Assign button pins
+pinMode(5, INPUT_PULLUP);
+pinMode(12, INPUT_PULLUP);
+//Set buttons to active low
+scrollButton.setActiveLogic(LOW);
+mainButton.setActiveLogic(LOW);
+//Begin acc
+lis.begin(0x18);  
+//Set RANGE for Acc
+lis.setRange(LIS3DH_RANGE_16_G);   // 2, 4, 8 or 16 G!
+//Calibrate X and Y axis
+calibrate();
+//Start bluetooth
+initializeBluefruit();
+```
+
+### `loop()`
+
+The main `loop()` consists of severl steps.  First it checks the status of the buttons.  If one or more of them are pressed it does the corresponding action.  Then it checks for movement and if it finds any it moves the cursor.  Rinse and repeat.  
+
+```c++
+//Update buttons
+scrollButton.update();
+mainButton.update();
+
+//Check for button events
+if (scrollButton.isActive() && mainButton.isActive())  //Click both to calibrate
+{
+  calibrate();
+}
+else
+{
+  if (scrollButton.isClicked())  //Check if scroll mode change
+  {
+    bolScroll = !bolScroll;
+  }
+  if (mainButton.isActive())  //Check for main button
+  {
+    ble.println("AT+BleHidMouseButton=L");  //Press but don't release to allow for dragging
+  }
+  if (mainButton.isReleased())
+  {
+    ble.println("AT+BleHidMouseButton=0");  //Release the button
+  }
+}
+
+//checkmovement functions return 0,1, or -1, then multiply by the RANGE
+int xDistance = checkXmovement() * RANGE;
+int yDistance = checkYmovement() * RANGE;
+
+//If not zero move
+if ((xDistance != 0) || (yDistance != 0))
+{
+  //If not in scroll mode
+  if (bolScroll == false)
+  {
+    String distance = convertMovement(xDistance,yDistance);  //Convert movement to string
+    ble.print("AT+BleHidMouseMove=");  //Scroll mouse
+    ble.println(distance);
+  }
+  //If in scroll mode
+  else
+  {
+    String distance = convertMovement(-yDistance/2,-xDistance/2); //Convert to string reversed for scroll
+    ble.print("AT+BleHidMouseMove=0,0,");  //Scroll mouse
+    ble.println(distance);
+    delay(150);
+  }
+}
+  
+delay(RESPONSEDELAY);
+```
+
+After the button status is updated the code checks for both buttons being pressed and then if they aren't it checks each individually, this is done to prevent an accidental click or scroll mode change.  Depending on if the user presses and releases both in a timely fashion this doesn't alway work but most of the time it works fine.  In the future I would like to refine this.  The way the Feather sends bluetooth commands is via a string that starts with "AT+" then whatever it is you're trying to do.  Documentation on this can be found [here](https://learn.adafruit.com/adafruit-feather-32u4-bluefruit-le/at-commands).  I am also looking for a better way to accomplish this.  I've seen some programs use `ble.atcommand()` but I can't find documentation on how this differs from `ble.print()`.  Also the last bit of code you send via bluetooth should use the `ble.println()` command.  I had crashing and erratic behavior when I only used `ble.print()`.
