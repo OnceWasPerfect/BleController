@@ -11,7 +11,10 @@ The code by this time was getting a little large and I didn't want to break some
 
 With any luck this project may help another disabled person have some entertainment.  
 
-## Pictures of Current Implementation
+## Current Implementation
+
+The Feather and buttons are housed in a card box.  The Accelerometer is housed in a jewelry box which has a hair tie glued to it.  This is then placed on the users foot.  Each box has a Cat5 keystone attached to it and the boxes are connected via a Cat5 cable.  In future implementations I would like to replace the Cat5 cable with something smaller (I only need 4 wires) while still maintaining the ability to easily disconnect the Accelerometer from the rest of the unit.  
+
 <img src="images/user.jpg" width="30%"> <img src="images/setup.jpg" width="30%"> <img src="images/main.jpg" width="30%"> <img src="images/foot.jpg" width="30%"> <img src="images/back.jpg" width="30%">
 
 ## Wiring
