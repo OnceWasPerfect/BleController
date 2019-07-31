@@ -154,3 +154,12 @@ delay(RESPONSEDELAY);
 ```
 
 After the button status is updated the code checks for both buttons being pressed and then if they aren't it checks each individually, this is done to prevent an accidental click or scroll mode change.  Depending on if the user presses and releases both in a timely fashion this doesn't alway work but most of the time it works fine.  In the future I would like to refine this.  The way the Feather sends bluetooth commands is via a string that starts with "AT+" then whatever it is you're trying to do.  Documentation on this can be found [here](https://learn.adafruit.com/adafruit-feather-32u4-bluefruit-le/at-commands).  I am also looking for a better way to accomplish this.  I've seen some programs use `ble.atcommand()` but I can't find documentation on how this differs from `ble.print()`.  Also the last bit of code you send via bluetooth should use the `ble.println()` command.  I had crashing and erratic behavior when I only used `ble.print()`.
+
+## Future Changes and Goals
+There are a few improvements I would like to make to the code and general setup. 
+* First I would like to really understand the bluetooth initiation and integrate it into my main ino.  I've tried a few times and each time it either fails to connect to the tablet or it connects and then disconnects after a few seconds and repeats this behavior until the Feather is unplugged.  
+* Add a mouse centering feature to the `calibrate()` function.  The way the Feather sends the mouse move command is relative to where the cursor currently is so I can't simply set it to a center value.  The cursor can be centered by resetting the bluetooth object but I would rather not have to do that.  The center branch is where I'm working on this currently.  
+* Replace the buttons with another input method.  My user is starting to have a hard time pressing the buttons now.  They are already fairly easy to activate so I don't think finding a lighter button is the answer here.  This is an issue I will like face in the future as well as movement function deteriorates.  
+
+## Feedback
+This is my biggest project so far and I'm just a hobbyist so I'm sure it doesn't always follow best practices so if you see something please say something so I can improve my code.  
