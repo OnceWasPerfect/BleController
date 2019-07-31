@@ -7,3 +7,5 @@ This project uses an [Adafruit Feather 32u4 Bluefruit LE](https://learn.adafruit
 The Feather communicates with the Accelerometer via the 12C connection.
 
 The buttons use two digital outputs from the Feather.
+
+The buttons use the internal pull up of the Feather and are active logic low.
