@@ -19,6 +19,9 @@ Adafruit_LIS3DH lis = Adafruit_LIS3DH();  //Create acc object
 int xCalibrated = 0;  //Base value for x
 int yCalibrated = 0;  //Base value for y
 
+int xLocation = 0;   //Current x location
+int yLocation = 0;  //Current y location
+
 void setup()
 {
   //Assign button pins
@@ -71,11 +74,12 @@ void loop()
   }
 
   //checkmovement functions return 0,1, or -1, then multiply by the range
-  int xDistance = checkXmovement() * range;  
+  int xDistance = checkXmovement() * range;
   int yDistance = checkYmovement() * range;
 
-  //Convert movement to string
-  String distance = convertMovement(xDistance,yDistance);  
+  //Keep track of movement for later recenter
+  xLocation = xLocation + xDistance;
+  yLocation = yLocation + yDistance;
 
   //If not zero move
   if ((xDistance != 0) || (yDistance != 0))
@@ -83,16 +87,16 @@ void loop()
     //If not in scroll mode
     if (bolScroll == false)
     {
-      ble.print("AT+BleHidMouseMove=");
+      String distance = convertMovement(xDistance,yDistance);  //Convert movement to string
+      ble.print("AT+BleHidMouseMove=");  //Scroll mouse
       ble.println(distance);
     }
     //If in scroll mode
     else
     {
-      ble.print("AT+BleHidMouseMove=0,0,");
-      ble.print(String(-yDistance/2));
-      ble.print(",");
-      ble.println(String(-xDistance));
+      String distance = convertMovement(-yDistance/2,-xDistance/2); //Convert to string reversed for scroll
+      ble.print("AT+BleHidMouseMove=0,0,");  //Scroll mouse
+      ble.println(distance);
       delay(150);
     }
   }
@@ -147,6 +151,10 @@ void calibrate ()
 
   xCalibrated = xTotal / calibrationFactor; //Average the x location
   yCalibrated = yTotal / calibrationFactor;  //Average the y location
+
+  String movement = convertMovement(-xLocation,-yLocation);  //Use the negative of the location to move back to center
+  ble.print("AT+BleHidMouseMove=");  //Move the cursor 
+  ble.println(movement);
 }
 
 //Check for x movement
@@ -205,3 +213,4 @@ String convertMovement(int x, int y)
   movement += String(y);  //Convert yDistance to string and add it to the string
   return movement;
 }
+//Test
