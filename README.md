@@ -166,6 +166,7 @@ There are a few improvements I would like to make to the code and general setup.
 * First I would like to really understand the bluetooth initiation and integrate it into my main ino.  I've tried a few times and each time it either fails to connect to the tablet or it connects and then disconnects after a few seconds and repeats this behavior until the Feather is unplugged.  
 * Add a mouse centering feature to the `calibrate()` function.  The way the Feather sends the mouse move command is relative to where the cursor currently is so I can't simply set it to a center value.  The cursor can be centered by resetting the bluetooth object but I would rather not have to do that.  The center branch is where I'm working on this currently.  
 * Replace the buttons with another input method.  My user is starting to have a hard time pressing the buttons now.  They are already fairly easy to activate so I don't think finding a lighter button is the answer here.  This is an issue I will like face in the future as well as movement function deteriorates.  
+* Find another way to connect the Accelerometer to the Feather.  I used a Cat5 cable because I had the keystones handy but I only use 4 of the 8 wires.  I would like a smaller connector while still having all the wires in one convenient cable.  
 
 ## Feedback
 This is my biggest project so far and I'm just a hobbyist so I'm sure it doesn't always follow best practices so if you see something please say something so I can improve my code.  
