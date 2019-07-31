@@ -11,16 +11,12 @@
 #define CALIBRATIONFACTOR 200  //How many captures for calibration
 #define DEADZONE 200  //How far before movement registered
 
-bool bolScroll = false;  //Is scroll mode active
 PushButton scrollButton(5);  //Scroll button
 PushButton mainButton(12);  //Main button
-
 Adafruit_LIS3DH lis = Adafruit_LIS3DH();  //Create acc object
 int xCalibrated = 0;  //Base value for x
 int yCalibrated = 0;  //Base value for y
-
-int xLocation = 0;   //Current x location
-int yLocation = 0;  //Current y location
+bool bolScroll = false;  //Is scroll mode active
 
 void setup()
 {
@@ -77,10 +73,6 @@ void loop()
   int xDistance = checkXmovement() * RANGE;
   int yDistance = checkYmovement() * RANGE;
 
-  //Keep track of movement for later recenter
-  xLocation = xLocation + xDistance;
-  yLocation = yLocation + yDistance;
-
   //If not zero move
   if ((xDistance != 0) || (yDistance != 0))
   {
@@ -110,15 +102,13 @@ int averageX ()
   int average = 0;
   long total = 0L;
 
-  for(int i = 0; i < AVERAGEFACTOR
-; i++)
+  for(int i = 0; i < AVERAGEFACTOR; i++)
   {
     lis.read();  //Get new reading from acc
     total = total + lis.x;  //Sum the readings
   }
   
-  average = total / AVERAGEFACTOR
-;  //Get the average
+  average = total / AVERAGEFACTOR;  //Get the average
   return average;
 }
 
@@ -128,15 +118,13 @@ int averageY ()
   int average = 0;
   long total = 0L;
 
-  for(int i = 0; i < AVERAGEFACTOR
-; i++)
+  for(int i = 0; i < AVERAGEFACTOR; i++)
   {
     lis.read();  //Get new reading from acc
     total = total + lis.y;  //Sum the readings
   }
   
-  average = total / AVERAGEFACTOR
-;  //Get the average
+  average = total / AVERAGEFACTOR;  //Get the average
   return average;  
 }
 
@@ -155,10 +143,6 @@ void calibrate ()
 
   xCalibrated = xTotal / CALIBRATIONFACTOR; //Average the x location
   yCalibrated = yTotal / CALIBRATIONFACTOR;  //Average the y location
-
-  String movement = convertMovement(-xLocation,-yLocation);  //Use the negative of the location to move back to center
-  ble.print("AT+BleHidMouseMove=");  //Move the cursor 
-  ble.println(movement);
 }
 
 //Check for x movement
