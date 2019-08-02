@@ -12,7 +12,7 @@
 #define DEADZONE 200  //How far before movement registered
 
 PushButton scrollButton(5);  //Scroll button
-PushButton mainButton(12);  //Main button
+PushButton mainButton(11);  //Main button
 Adafruit_LIS3DH lis = Adafruit_LIS3DH();  //Create acc object
 int xCalibrated = 0;  //Base value for x
 int yCalibrated = 0;  //Base value for y
