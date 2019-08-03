@@ -12,12 +12,16 @@
 #define CALIBRATIONFACTOR 200  //How many captures for calibration
 #define DEADZONE 200  //How far before movement registered
 
-PushButton scrollButton(3);  //Scroll button
-PushButton mainButton(4);  //Main button
+PushButton mainButton(3);  //Main button
+PushButton scrollButton(4);  //Scroll button
 Adafruit_LIS3DH lis = Adafruit_LIS3DH();  //Create acc object
 int xCalibrated = 0;  //Base value for x
 int yCalibrated = 0;  //Base value for y
+int xDistance = 0;  //Distance to move in x direction
+int yDistance = 0; //Distance to move in y direction
 bool bolScroll = false;  //Is scroll mode active
+long xCurrent = 0L;  //Current location of x
+long yCurrent = 0L;  //Current location of y
 
 void setup()
 {
@@ -39,6 +43,8 @@ void setup()
   calibrate();
 
   Mouse.begin();
+  //Serial.begin(9600);
+  //Serial.println("Exiting Setup");
 }
 
 void loop()
@@ -51,6 +57,7 @@ void loop()
   //Check for button events
   if (scrollButton.isActive() && mainButton.isActive())  //Click both to calibrate
   {
+    Serial.println("Calling Calibrate");
     calibrate();
   }
   else
@@ -70,8 +77,8 @@ void loop()
   }
 
   //checkmovement functions return 0,1, or -1, then multiply by the RANGE
-  int xDistance = checkXmovement() * RANGE;
-  int yDistance = checkYmovement() * RANGE;
+  xDistance = checkXmovement() * RANGE;
+  yDistance = checkYmovement() * RANGE;
 
   //If not zero move
   if ((xDistance != 0) || (yDistance != 0))
@@ -80,6 +87,12 @@ void loop()
     if (bolScroll == false)
     {
       Mouse.move(xDistance, yDistance, 0);
+      xCurrent = xCurrent + xDistance;
+      yCurrent = yCurrent + yDistance;
+      /*Serial.print("xDistance = \t"); Serial.print(xDistance);
+      Serial.print(" \tyDistance = \t");Serial.println(yDistance);
+      Serial.print("xCurrent = \t"); Serial.print(xCurrent);
+      Serial.print(" \tyCurrent= \t"); Serial.println(yCurrent);*/
     }
     //If in scroll mode
     else
@@ -139,6 +152,20 @@ void calibrate ()
 
   xCalibrated = xTotal / CALIBRATIONFACTOR; //Average the x location
   yCalibrated = yTotal / CALIBRATIONFACTOR;  //Average the y location
+  
+  /*Serial.println("xCurrent and yCurrent before move");
+  Serial.print("xCurrent = \t"); Serial.print(xCurrent);
+  Serial.print(" \tyCurrent = \t"); Serial.println(yCurrent);
+  Mouse.move(-xCurrent, -yCurrent, 0);  //Mouse mouse opposite of its movement data
+  Serial.println("xCurrent and yCurrent after move");
+  Serial.print("xCurrent = \t"); Serial.print(xCurrent);
+  Serial.print(" \tyCurrent = \t"); Serial.println(yCurrent);
+  xCurrent = 0;  //Rest current x location
+  yCurrent = 0;  //Reset current y location
+  Serial.println("xCurrent and yCurrent after reset");
+  Serial.print("xCurrent = \t"); Serial.print(xCurrent);
+  Serial.print(" \tyCurrent = \t"); Serial.println(yCurrent);*/
+
 }
 
 //Check for x movement
