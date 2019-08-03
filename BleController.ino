@@ -1,9 +1,10 @@
-#include "BluefruitRoutines.h"
+//#include "BluefruitRoutines.h"
 #include <Wire.h>
 #include <PushButton.h>
 #include <SPI.h>
 #include <Adafruit_LIS3DH.h>
 #include <Adafruit_Sensor.h>
+#include <Mouse.h>
 
 #define RANGE 7  //How far the mouse moves
 #define RESPONSEDELAY 5  //How often the loop runs
@@ -11,8 +12,8 @@
 #define CALIBRATIONFACTOR 200  //How many captures for calibration
 #define DEADZONE 200  //How far before movement registered
 
-PushButton scrollButton(5);  //Scroll button
-PushButton mainButton(6);  //Main button
+PushButton scrollButton(3);  //Scroll button
+PushButton mainButton(4);  //Main button
 Adafruit_LIS3DH lis = Adafruit_LIS3DH();  //Create acc object
 int xCalibrated = 0;  //Base value for x
 int yCalibrated = 0;  //Base value for y
@@ -21,8 +22,8 @@ bool bolScroll = false;  //Is scroll mode active
 void setup()
 {
   //Assign button pins
-  pinMode(5, INPUT_PULLUP);
-  pinMode(6, INPUT_PULLUP);
+  pinMode(3, INPUT_PULLUP);
+  pinMode(4, INPUT_PULLUP);
 
   //Set buttons to active low
   scrollButton.setActiveLogic(LOW);
@@ -36,9 +37,8 @@ void setup()
 
   //Calibrate X and Y axis
   calibrate();
-  
-  //Start bluetooth
-  initializeBluefruit();
+
+  Mouse.begin();
 }
 
 void loop()
@@ -61,11 +61,11 @@ void loop()
     }
     if (mainButton.isActive())  //Check for main button
     {
-      ble.println("AT+BleHidMouseButton=L");  //Press but don't release to allow for dragging
+      Mouse.press(MOUSE_LEFT);  //Press but don't release to allow for dragging
     }
     if (mainButton.isReleased())
     {
-      ble.println("AT+BleHidMouseButton=0");  //Release the button
+      Mouse.release(MOUSE_LEFT);  //Release the button
     }
   }
 
@@ -79,16 +79,12 @@ void loop()
     //If not in scroll mode
     if (bolScroll == false)
     {
-      String distance = convertMovement(xDistance,yDistance);  //Convert movement to string
-      ble.print("AT+BleHidMouseMove=");  //Scroll mouse
-      ble.println(distance);
+      Mouse.move(xDistance, yDistance, 0);
     }
     //If in scroll mode
     else
     {
-      String distance = convertMovement(-yDistance/2,-xDistance/2); //Convert to string reversed for scroll
-      ble.print("AT+BleHidMouseMove=0,0,");  //Scroll mouse
-      ble.println(distance);
+      Mouse.move(0,0, -yDistance);
       delay(150);
     }
   }

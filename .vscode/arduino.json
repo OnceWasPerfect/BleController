@@ -1,5 +1,6 @@
 {
     "sketch": "BleController.ino",
-    "board": "adafruit:avr:feather32u4",
-    "port": "COM6"
+    "board": "adafruit:samd:adafruit_trinket_m0",
+    "port": "COM6",
+    "configuration": "usbstack=arduino,debug=off"
 }
