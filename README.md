@@ -27,7 +27,7 @@ Wiring is fairly simple.  You will need four wires connecting the Feather to the
 * Connect the Gnd pin of the Accelerometer to Ground
 * Connect one lead of the main button to pin 5 on the Feather (this can be changed in code)
 * Connect the other lead to Ground
-* Connect one lead of the scroll toggle button to pin 12 on the Feather (this can be changed in code)
+* Connect one lead of the scroll toggle button to pin 6 on the Feather (this can be changed in code)
 * Connect the other lead to Ground
 
 ![Wiring Diagram](images/wiring.png)
@@ -48,19 +48,23 @@ There are several `#define` statements I use to help fine tune the project.  As 
 #define AVERAGEFACTOR 20  //How many captures per movement check
 #define CALIBRATIONFACTOR 200  //How many captures for calibration
 #define DEADZONE 200  //How far before movement registered
+#define MAINBUTTONPIN 5 //Pin for main button
+#define SCROLLBUTTONPIN 6 //Pin for scroll button
 ```
 
-The `RANGE` constant determines how far the mouse moves with each move command (essentially how fast the cursor moves).  `RESPONSEDELAY` is a little delay at the end of the loop before it reruns this affects how fast the program is overall (may not be strictly necessary at this point).  The `AVERAGEFACTOR` constant determines how many data points to get from the Accelerometer before checking for movement.  The Accelerometer is quite noisy so several captures are taken and averaged out before determining its location.  `CALIBRATIONFACTOR` is how many times we poll the Accelerometer to determine a resting position (see `calibration()` function).  Finally `DEADZONE` is a threshold the Accelerometer must pass before we register a movement.  This is needed so that when the user is at rest the cursor will stay in one location instead of jumping around.  
+The `RANGE` constant determines how far the mouse moves with each move command (essentially how fast the cursor moves).  `RESPONSEDELAY` is a little delay at the end of the loop before it reruns this affects how fast the program is overall (may not be strictly necessary at this point).  The `AVERAGEFACTOR` constant determines how many data points to get from the Accelerometer before checking for movement.  The Accelerometer is quite noisy so several captures are taken and averaged out before determining its location.  `CALIBRATIONFACTOR` is how many times we poll the Accelerometer to determine a resting position (see `calibration()` function).  `DEADZONE` is a threshold the Accelerometer must pass before we register a movement.  This is needed so that when the user is at rest the cursor will stay in one location instead of jumping around.  You can set `MAINBUTTONPIN` and `SCROLLBUTTONPIN` to whatever pin you want to use for those buttons.  
 
 ### Global Objects and Variables
 I tried to minimize the use of global objects and variables to avoid any unintended changes in the code.  The way the Arduino `loop()` works necessitates some though.
 
 ```c++
-PushButton scrollButton(5);  //Scroll button
-PushButton mainButton(12);  //Main button
+PushButton mainButton(MAINBUTTONPIN);  //Main button
+PushButton scrollButton(SCROLLBUTTONPIN);  //Scroll button
 Adafruit_LIS3DH lis = Adafruit_LIS3DH();  //Create acc object
 int xCalibrated = 0;  //Base value for x
 int yCalibrated = 0;  //Base value for y
+int xDistance = 0;  //Movement of x axis
+int yDistance = 0;  //Movement of y axis
 bool bolScroll = false;  //Is scroll mode active
 Adafruit_BluefruitLE_SPI ble(BLUEFRUIT_SPI_CS, BLUEFRUIT_SPI_IRQ, BLUEFRUIT_SPI_RST);  //Bluetooth object
 ```
@@ -87,8 +91,8 @@ There isn't a lot to do in the setup.  First the pins for the buttons are setup 
 
 ```c++
 //Assign button pins
-pinMode(5, INPUT_PULLUP);
-pinMode(12, INPUT_PULLUP);
+pinMode(MAINBUTTONPIN, INPUT_PULLUP);
+pinMode(SCROLLBUTTONPIN, INPUT_PULLUP);
 //Set buttons to active low
 scrollButton.setActiveLogic(LOW);
 mainButton.setActiveLogic(LOW);
@@ -133,8 +137,8 @@ else
 }
 
 //checkmovement functions return 0,1, or -1, then multiply by the RANGE
-int xDistance = checkXmovement() * RANGE;
-int yDistance = checkYmovement() * RANGE;
+xDistance = checkXmovement() * RANGE;
+yDistance = checkYmovement() * RANGE;
 
 //If not zero move
 if ((xDistance != 0) || (yDistance != 0))
