@@ -11,9 +11,11 @@
 #define AVERAGEFACTOR 20  //How many captures per movement check
 #define CALIBRATIONFACTOR 200  //How many captures for calibration
 #define DEADZONE 200  //How far before movement registered
+#define MAINBUTTONPIN 3 //Main button pin
+#define SCROLLBUTTONPIN 4 //Scroll button pin
 
-PushButton mainButton(3);  //Main button
-PushButton scrollButton(4);  //Scroll button
+PushButton mainButton(MAINBUTTONPIN);  //Main button
+PushButton scrollButton(SCROLLBUTTONPIN);  //Scroll button
 Adafruit_LIS3DH lis = Adafruit_LIS3DH();  //Create acc object
 int xCalibrated = 0;  //Base value for x
 int yCalibrated = 0;  //Base value for y
@@ -26,8 +28,8 @@ long yCurrent = 0L;  //Current location of y
 void setup()
 {
   //Assign button pins
-  pinMode(3, INPUT_PULLUP);
-  pinMode(4, INPUT_PULLUP);
+  pinMode(MAINBUTTONPIN, INPUT_PULLUP);
+  pinMode(SCROLLBUTTONPIN, INPUT_PULLUP);
 
   //Set buttons to active low
   scrollButton.setActiveLogic(LOW);
