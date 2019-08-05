@@ -1,4 +1,4 @@
-//#include "BluefruitRoutines.h"
+#include "BluefruitRoutines.h"
 #include <Wire.h>
 #include <PushButton.h>
 #include <SPI.h>
@@ -22,10 +22,6 @@ int yCalibrated = 0;  //Base value for y
 int xDistance = 0;  //Movement of x axis
 int yDistance = 0;  //Movement of y axis
 bool bolScroll = false;  //Is scroll mode active
-
-//Testing for new feather
-BLEDis bledis;
-BLEHidAdafruit blehid;
 
 void setup()
 {
