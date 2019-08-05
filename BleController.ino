@@ -1,9 +1,10 @@
-#include "BluefruitRoutines.h"
+//#include "BluefruitRoutines.h"
 #include <Wire.h>
 #include <PushButton.h>
 #include <SPI.h>
 #include <Adafruit_LIS3DH.h>
 #include <Adafruit_Sensor.h>
+#include <bluefruit.h>
 
 #define RANGE 7  //How far the mouse moves
 #define RESPONSEDELAY 5  //How often the loop runs
@@ -21,6 +22,10 @@ int yCalibrated = 0;  //Base value for y
 int xDistance = 0;  //Movement of x axis
 int yDistance = 0;  //Movement of y axis
 bool bolScroll = false;  //Is scroll mode active
+
+//Testing for new feather
+BLEDis bledis;
+BLEHidAdafruit blehid;
 
 void setup()
 {
@@ -42,7 +47,7 @@ void setup()
   calibrate();
   
   //Start bluetooth
-  initializeBluefruit();
+  //initializeBluefruit();
 }
 
 void loop()
@@ -65,11 +70,13 @@ void loop()
     }
     if (mainButton.isActive())  //Check for main button
     {
-      ble.println("AT+BleHidMouseButton=L");  //Press but don't release to allow for dragging
+      //ble.println("AT+BleHidMouseButton=L");  //Press but don't release to allow for dragging
+      blehid.mouseButtonPress(MOUSE_BUTTON_LEFT);
     }
     if (mainButton.isReleased())
     {
-      ble.println("AT+BleHidMouseButton=0");  //Release the button
+      //ble.println("AT+BleHidMouseButton=0");  //Release the button
+      blehid.mouseButtonRelease();
     }
   }
 
@@ -84,15 +91,18 @@ void loop()
     if (bolScroll == false)
     {
       String distance = convertMovement(xDistance,yDistance);  //Convert movement to string
-      ble.print("AT+BleHidMouseMove=");  //Scroll mouse
-      ble.println(distance);
+      //ble.print("AT+BleHidMouseMove=");  //Scroll mouse
+      //ble.println(distance);
+      blehid.mouseMove(xDistance, yDistance);
     }
     //If in scroll mode
     else
     {
       String distance = convertMovement(-yDistance/2,-xDistance/2); //Convert to string reversed for scroll
-      ble.print("AT+BleHidMouseMove=0,0,");  //Scroll mouse
-      ble.println(distance);
+      //ble.print("AT+BleHidMouseMove=0,0,");  //Scroll mouse
+      //ble.println(distance);
+      blehid.mouseScroll(-yDistance);
+      blehid.mousePan(-xDistance);
       delay(150);
     }
   }
