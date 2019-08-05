@@ -4,15 +4,14 @@
 #include <SPI.h>
 #include <Adafruit_LIS3DH.h>
 #include <Adafruit_Sensor.h>
-#include <bluefruit.h>
 
 #define RANGE 7  //How far the mouse moves
 #define RESPONSEDELAY 5  //How often the loop runs
 #define AVERAGEFACTOR 20  //How many captures per movement check
 #define CALIBRATIONFACTOR 200  //How many captures for calibration
 #define DEADZONE 200  //How far before movement registered
-#define MAINBUTTONPIN 5 //Pin for main button
-#define SCROLLBUTTONPIN 6 //Pin for scroll button
+#define MAINBUTTONPIN 27 //Pin for main button
+#define SCROLLBUTTONPIN 30 //Pin for scroll button
 
 PushButton mainButton(MAINBUTTONPIN);  //Main button
 PushButton scrollButton(SCROLLBUTTONPIN);  //Scroll button
@@ -43,7 +42,7 @@ void setup()
   calibrate();
   
   //Start bluetooth
-  //initializeBluefruit();
+  initializeBluefruit();
 }
 
 void loop()
@@ -66,12 +65,10 @@ void loop()
     }
     if (mainButton.isActive())  //Check for main button
     {
-      //ble.println("AT+BleHidMouseButton=L");  //Press but don't release to allow for dragging
       blehid.mouseButtonPress(MOUSE_BUTTON_LEFT);
     }
     if (mainButton.isReleased())
     {
-      //ble.println("AT+BleHidMouseButton=0");  //Release the button
       blehid.mouseButtonRelease();
     }
   }
@@ -86,17 +83,11 @@ void loop()
     //If not in scroll mode
     if (bolScroll == false)
     {
-      String distance = convertMovement(xDistance,yDistance);  //Convert movement to string
-      //ble.print("AT+BleHidMouseMove=");  //Scroll mouse
-      //ble.println(distance);
       blehid.mouseMove(xDistance, yDistance);
     }
     //If in scroll mode
     else
     {
-      String distance = convertMovement(-yDistance/2,-xDistance/2); //Convert to string reversed for scroll
-      //ble.print("AT+BleHidMouseMove=0,0,");  //Scroll mouse
-      //ble.println(distance);
       blehid.mouseScroll(-yDistance);
       blehid.mousePan(-xDistance);
       delay(150);
@@ -201,13 +192,4 @@ int checkYmovement()
   {
     return 0;
   }
-}
-
-//Convert to string for ble
-String convertMovement(int x, int y)
-{
-  String movement = String(x);  //Convert xDistance to string
-  movement += ",";  //Add the comma
-  movement += String(y);  //Convert yDistance to string and add it to the string
-  return movement;
 }
