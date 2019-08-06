@@ -1,4 +1,6 @@
 # BleController
+Note:  The project is currently being ported to an Adafruit Feather nRF52 Bluefruit LE.  The Adafruit Bluefruit Feather 32u4 LE version is now under the branch named Feather32u4.
+
 ### Bluetooth controller using Adafruit Bluefruit Feather 32u4 Bluefruit LE
 
 This project uses an [Adafruit Feather 32u4 Bluefruit LE](https://learn.adafruit.com/adafruit-feather-32u4-bluefruit-le) to act as a HID mouse for an android tablet.  For movement input it uses the [Adafruit LIS3DH Triple-Axis Accelerometer](https://learn.adafruit.com/adafruit-lis3dh-triple-axis-accelerometer-breakout) attached to the user's foot.  There are two simple arcade buttons used for left click and a scroll toggle. 
