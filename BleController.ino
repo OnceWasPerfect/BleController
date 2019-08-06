@@ -88,9 +88,9 @@ void loop()
     //If in scroll mode
     else
     {
-      blehid.mouseScroll(-yDistance);
-      blehid.mousePan(-xDistance);
-      delay(150);
+      blehid.mouseScroll(-yDistance/7);
+      blehid.mousePan(-xDistance/7);
+      //delay(200);
     }
   }
   
