@@ -4,12 +4,15 @@
 #include <nRF24L01.h>  //Wireless tranceiver library
 #include <RF24.h>  //Wireless tranceiver library
 
+#define RADIOCEPIN 7  //Chip enable pin for radio
+#define RADIOCSNPIN 8 //Chip select pin for radio
+
 //Accelerometer setup
 Adafruit_LIS3DH lis = Adafruit_LIS3DH();  //Create acc object
 int location[] = {0, 0};
 
 //Radio setup
-RF24 radio(7, 8); // Set up the radio object CE, CSN
+RF24 radio(RADIOCEPIN, RADIOCSNPIN); // Set up the radio object CE, CSN
 const byte address[6] = "00001";  //The address the radio will work on
 
 void setup()
