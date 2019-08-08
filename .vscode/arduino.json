@@ -1,7 +1,7 @@
 {
-    "sketch": "BleController.ino",
-    "board": "adafruit:nrf52:feather52832",
+    "sketch": "WirelessFoot.ino",
+    "board": "arduino:avr:nano",
     "port": "COM15",
-    "configuration": "softdevice=s132v6,debug=l0",
+    "configuration": "cpu=atmega328",
     "programmer": "AVRISP mkII"
 }
