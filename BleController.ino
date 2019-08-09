@@ -44,6 +44,9 @@ void setup()
   radio.setPALevel(RF24_PA_MIN);  //The power level it is using
   radio.startListening();  //Start listening for data
   
+  //Calibrate Accelerometer
+  calibrate();
+  
   //Start bluetooth
   initializeBluefruit();
 }
