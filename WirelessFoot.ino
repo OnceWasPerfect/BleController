@@ -4,8 +4,8 @@
 #include <nRF24L01.h>  //Wireless tranceiver library
 #include <RF24.h>  //Wireless tranceiver library
 
-#define RADIOCEPIN 7  //Chip enable pin for radio
-#define RADIOCSNPIN 8 //Chip select pin for radio
+#define RADIOCEPIN 10  //Chip enable pin for radio
+#define RADIOCSNPIN 9 //Chip select pin for radio
 
 //Accelerometer setup
 Adafruit_LIS3DH lis = Adafruit_LIS3DH();  //Create acc object
@@ -38,6 +38,6 @@ void loop()
     //Send data via radio
     radio.write(&location, sizeof(location)); 
     
-    delay(100);  //small delay to let it finish
+    delay(500);  //small delay to let it finish
 }
   

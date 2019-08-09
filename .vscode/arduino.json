@@ -1,7 +1,7 @@
 {
     "sketch": "WirelessFoot.ino",
     "board": "arduino:avr:nano",
-    "port": "COM15",
+    "port": "COM16",
     "configuration": "cpu=atmega328",
     "programmer": "AVRISP mkII"
 }
