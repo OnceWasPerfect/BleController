@@ -131,10 +131,10 @@ int averageX ()
       radio.read(&location, sizeof(location));
       DEBUG_PRINTLN("In radio read");
       DEBUG_PRINT("Location: x = "); DEBUG_PRINTLN(location[0]);
+      total = total + location[0];  //Sum the readings
+      DEBUG_PRINT(i); DEBUG_PRINT(" xLocation = "); DEBUG_PRINTLN(location[0]);
+      DEBUG_PRINT("total = "); DEBUG_PRINTLN(total);
     }
-    total = total + location[0];  //Sum the readings
-    DEBUG_PRINT(i); DEBUG_PRINT(" xLocation = "); DEBUG_PRINTLN(location[0]);
-    DEBUG_PRINT("total = "); DEBUG_PRINTLN(total);
   }
   
   average = total / AVERAGEFACTOR;  //Get the average
@@ -155,10 +155,10 @@ int averageY ()
       radio.read(&location, sizeof(location));
       DEBUG_PRINTLN("In radio read");
       DEBUG_PRINT("Location: y = "); DEBUG_PRINTLN(location[1]);
+      total = total + location[1];  //Sum the readings
+      DEBUG_PRINT(i); DEBUG_PRINT(" yLocation = "); DEBUG_PRINTLN(location[1]);
+      DEBUG_PRINT("total = "); DEBUG_PRINTLN(total);
     }
-    total = total + location[1];  //Sum the readings
-    DEBUG_PRINT(i); DEBUG_PRINT(" yLocation = "); DEBUG_PRINTLN(location[1]);
-    DEBUG_PRINT("total = "); DEBUG_PRINTLN(total);
   }
   
   average = total / AVERAGEFACTOR;  //Get the average
@@ -180,13 +180,13 @@ void calibrate ()
       DEBUG_PRINTLN("In radio read calibrate");
       DEBUG_PRINT("Location: x = "); DEBUG_PRINTLN(location[0]);
       DEBUG_PRINT("Location: y = "); DEBUG_PRINTLN(location[1]);
+      xTotal = xTotal + location[0];  //Total the x locations
+      yTotal = yTotal + location[1];  //Total the y locations
+      DEBUG_PRINT(i); DEBUG_PRINT(" xLocation = "); DEBUG_PRINTLN(location[0]);
+      DEBUG_PRINT("xTotal = "); DEBUG_PRINTLN(xTotal);
+      DEBUG_PRINT(i); DEBUG_PRINT(" yLocation = "); DEBUG_PRINTLN(location[1]);
+      DEBUG_PRINT("yTotal = "); DEBUG_PRINTLN(yTotal);
     }
-    xTotal = xTotal + location[0];  //Total the x locations
-    yTotal = yTotal + location[1];  //Total the y locations
-    DEBUG_PRINT(i); DEBUG_PRINT(" xLocation = "); DEBUG_PRINTLN(location[0]);
-    DEBUG_PRINT("xTotal = "); DEBUG_PRINTLN(xTotal);
-    DEBUG_PRINT(i); DEBUG_PRINT(" yLocation = "); DEBUG_PRINTLN(location[1]);
-    DEBUG_PRINT("yTotal = "); DEBUG_PRINTLN(yTotal);
   }
 
   xCalibrated = xTotal / CALIBRATIONFACTOR; //Average the x location
