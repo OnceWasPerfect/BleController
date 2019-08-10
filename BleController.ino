@@ -5,6 +5,16 @@
 #include <nRF24L01.h>
 #include <RF24.h>
 
+//Debug setup
+#define DEBUG //comment out to disable debug
+#ifdef DEBUG
+ #define DEBUG_PRINT(x)     Serial.print (x)
+ #define DEBUG_PRINTLN(x)  Serial.println (x)
+#else
+ #define DEBUG_PRINT(x)
+ #define DEBUG_PRINTLN(x) 
+#endif
+
 #define RANGE 7  //How far the mouse moves
 #define RESPONSEDELAY 5  //How often the loop runs
 #define AVERAGEFACTOR 20  //How many captures per movement check
@@ -46,6 +56,7 @@ void setup()
   
   //Calibrate Accelerometer
   calibrate();
+  DEBUG_PRINTLN("After calibrate setup");
   
   //Start bluetooth
   initializeBluefruit();
@@ -115,8 +126,12 @@ int averageX ()
     if (radio.available()) 
     {
       radio.read(&location, sizeof(location));
+      DEBUG_PRINTLN("In radio read");
+      DEBUG_PRINT("Location: x = "); DEBUG_PRINTLN(location[0]);
     }
     total = total + location[0];  //Sum the readings
+    DEBUG_PRINT(i); DEBUG_PRINT(" xLocation = "); DEBUG_PRINTLN(location[0]);
+    DEBUG_PRINT("total = "); DEBUG_PRINTLN(total);
   }
   
   average = total / AVERAGEFACTOR;  //Get the average
@@ -135,8 +150,12 @@ int averageY ()
     if (radio.available()) 
     {
       radio.read(&location, sizeof(location));
+      DEBUG_PRINTLN("In radio read");
+      DEBUG_PRINT("Location: y = "); DEBUG_PRINTLN(location[1]);
     }
     total = total + location[1];  //Sum the readings
+    DEBUG_PRINT(i); DEBUG_PRINT(" yLocation = "); DEBUG_PRINTLN(location[1]);
+    DEBUG_PRINT("total = "); DEBUG_PRINTLN(total);
   }
   
   average = total / AVERAGEFACTOR;  //Get the average
@@ -155,13 +174,22 @@ void calibrate ()
     if (radio.available()) 
     {
       radio.read(&location, sizeof(location));
+      DEBUG_PRINTLN("In radio read calibrate");
+      DEBUG_PRINT("Location: x = "); DEBUG_PRINTLN(location[0]);
+      DEBUG_PRINT("Location: y = "); DEBUG_PRINTLN(location[1]);
     }
     xTotal = xTotal + location[0];  //Total the x locations
     yTotal = yTotal + location[1];  //Total the y locations
+    DEBUG_PRINT(i); DEBUG_PRINT(" xLocation = "); DEBUG_PRINTLN(location[0]);
+    DEBUG_PRINT("xTotal = "); DEBUG_PRINTLN(xTotal);
+    DEBUG_PRINT(i); DEBUG_PRINT(" yLocation = "); DEBUG_PRINTLN(location[1]);
+    DEBUG_PRINT("yTotal = "); DEBUG_PRINTLN(yTotal);
   }
 
   xCalibrated = xTotal / CALIBRATIONFACTOR; //Average the x location
   yCalibrated = yTotal / CALIBRATIONFACTOR;  //Average the y location
+  DEBUG_PRINT("xCalibrated = ");DEBUG_PRINTLN(xCalibrated);
+  DEBUG_PRINT("yCalibrated = ");DEBUG_PRINTLN(yCalibrated);
 }
 
 //Check for x movement
