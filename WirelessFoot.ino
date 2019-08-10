@@ -42,7 +42,7 @@ void setup()
   radio.openWritingPipe(address[0]);  //Start the writing pipe
   radio.openReadingPipe(1, address[1]);  //Start the reading pipe
   radio.setPALevel(RF24_PA_MIN);  //How strong to send the signal
-  radio.startListening();  //Turn off listening mode so it can transmit
+  radio.startListening();  //Start listening for send command
 }
 
 void loop()
