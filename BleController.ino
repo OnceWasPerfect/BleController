@@ -10,9 +10,11 @@
 #ifdef DEBUG
  #define DEBUG_PRINT(x)     Serial.print (x)
  #define DEBUG_PRINTLN(x)  Serial.println (x)
+ #define DEBUG_BEGIN(x)     Serial.begin(x)
 #else
  #define DEBUG_PRINT(x)
  #define DEBUG_PRINTLN(x) 
+ #define DEBUG_BEGIN(x)
 #endif
 
 #define RANGE 7  //How far the mouse moves
@@ -42,6 +44,7 @@ const byte address[6] = "00001";  //Address the radios will use
 
 void setup()
 {
+  DEBUG_BEGIN(115200);
   //Button setup
   pinMode(MAINBUTTONPIN, INPUT_PULLUP);  //Set button pin with pullup
   pinMode(SCROLLBUTTONPIN, INPUT_PULLUP);  //Set button pin with pullup
