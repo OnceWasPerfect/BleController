@@ -25,7 +25,8 @@ int location[] = {0, 0};
 
 //Radio setup
 RF24 radio(RADIOCEPIN, RADIOCSNPIN); // Set up the radio object CE, CSN
-const byte address[6] = "00001";  //The address the radio will work on
+const byte address[][6] = {"00001", "00002"};  //The address the radio will work on
+bool sendData = false;  //Did feather ask for data?
 
 void setup()
 {
@@ -36,25 +37,31 @@ void setup()
 
   //Radio setup
   radio.begin();  //Start the radio object
-  radio.openWritingPipe(address);  //Start the writing pipe
+  radio.enableAckPayload();  //Enable the acknowledge response
+  radio.enableDynamicPayloads();  //Acknowledge response is a daynamic payload
+  radio.openWritingPipe(address[0]);  //Start the writing pipe
+  radio.openReadingPipe(1, address[1]);  //Start the reading pipe
   radio.setPALevel(RF24_PA_MIN);  //How strong to send the signal
-  radio.stopListening();  //Turn off listening mode so it can transmit
+  radio.startListening();  //Turn off listening mode so it can transmit
 }
 
 void loop()
 {
-    //Read from accelerometer
-    lis.read();  //Get new location data
-    location[0] = lis.x;  //store x axis
-    location[1] = lis.y;  //store y axis
+  while (radio.available())  //Look for send command
+  {
+      DEBUG_PRINTLN("Inside radio.available()");
+    radio.read(&sendData, sizeof(sendData));  //Read in command
+      DEBUG_PRINT("sendData = "); DEBUG_PRINTLN(sendData);
+    if(sendData == true)  //If feather wants data
+    {
+      //Read from accelerometer
+      lis.read();  //Get new location data
+      location[0] = lis.x;  //store x axis
+      location[1] = lis.y;  //store y axis
 
-    //Send data via radio
-    //radio.write(&location, sizeof(location)); 
-    int test[] = {1234, 4321};
-    radio.write(&test, sizeof(test));
-    DEBUG_PRINT("x = "); DEBUG_PRINTLN(test[0]);
-    DEBUG_PRINT("y = "); DEBUG_PRINTLN(test[1]);
-    
-    delay(10);  //small delay to let it finish
+      radio.writeAckPayload(1, location, sizeof(location));  //Write the data
+      sendData = false;  //Reset to look for next read command
+    }
+  }   
 }
   
