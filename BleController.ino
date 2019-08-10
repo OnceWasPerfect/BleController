@@ -37,10 +37,12 @@ int xCalibrated = 0;  //Base value for x
 int yCalibrated = 0;  //Base value for y
 int xDistance = 0;  //Movement of x axis
 int yDistance = 0;  //Movement of y axis
+int receivedLocation[] = {0,0}; //Data from foot
 
 //Radio setup
 RF24 radio(RADIOCEPIN, RADIOCSNPIN); // create radio object CE, CSN
-const byte address[6] = "00001";  //Address the radios will use
+const byte address[][6] = {"00001", "00002"};  //Address the radios will use
+bool sendData = true;  //Tell foot to send data
 
 void setup()
 {
@@ -53,9 +55,12 @@ void setup()
   
   //Setup radio
   radio.begin();  //Start radio object
-  radio.openReadingPipe(0, address);  //The pipe and address it will listen on
-  radio.setPALevel(RF24_PA_MIN);  //The power level it is using
-  radio.startListening();  //Start listening for data
+  radio.enableAckPayload();  //Enable the acknowledge response
+  radio.enableDynamicPayloads();  //Acknowledge response is a daynamic payload
+  radio.openWritingPipe(address[1]);  //Start the writing pipe
+  radio.openReadingPipe(1, address[0]);  //Start the reading pipe
+  radio.setPALevel(RF24_PA_MIN);  //How strong to send the signal
+  radio.startListening();  //Start listening for acknowledge
   
   //Calibrate Accelerometer
   calibrate();
@@ -126,15 +131,8 @@ int averageX ()
 
   for(int i = 0; i < AVERAGEFACTOR; i++)
   {
-    if (radio.available()) 
-    {
-      radio.read(&location, sizeof(location));
-      DEBUG_PRINTLN("In radio read");
-      DEBUG_PRINT("Location: x = "); DEBUG_PRINTLN(location[0]);
-      total = total + location[0];  //Sum the readings
-      DEBUG_PRINT(i); DEBUG_PRINT(" xLocation = "); DEBUG_PRINTLN(location[0]);
-      DEBUG_PRINT("total = "); DEBUG_PRINTLN(total);
-    }
+    readRadio();
+    total = total + receivedLocation[0];
   }
   
   average = total / AVERAGEFACTOR;  //Get the average
@@ -146,19 +144,11 @@ int averageY ()
 {
   int average = 0;
   long total = 0L;
-  int location[] = {0,0};
 
   for(int i = 0; i < AVERAGEFACTOR; i++)
   {
-    if (radio.available()) 
-    {
-      radio.read(&location, sizeof(location));
-      DEBUG_PRINTLN("In radio read");
-      DEBUG_PRINT("Location: y = "); DEBUG_PRINTLN(location[1]);
-      total = total + location[1];  //Sum the readings
-      DEBUG_PRINT(i); DEBUG_PRINT(" yLocation = "); DEBUG_PRINTLN(location[1]);
-      DEBUG_PRINT("total = "); DEBUG_PRINTLN(total);
-    }
+    readRadio();
+    total = total + receivedLocation[1];
   }
   
   average = total / AVERAGEFACTOR;  //Get the average
@@ -174,19 +164,9 @@ void calibrate ()
 
   for (int i = 0; i < CALIBRATIONFACTOR; i++)  //Sample location CALIBRATIONFACTOR times
   {
-    if (radio.available()) 
-    {
-      radio.read(&location, sizeof(location));
-      DEBUG_PRINTLN("In radio read calibrate");
-      DEBUG_PRINT("Location: x = "); DEBUG_PRINTLN(location[0]);
-      DEBUG_PRINT("Location: y = "); DEBUG_PRINTLN(location[1]);
-      xTotal = xTotal + location[0];  //Total the x locations
-      yTotal = yTotal + location[1];  //Total the y locations
-      DEBUG_PRINT(i); DEBUG_PRINT(" xLocation = "); DEBUG_PRINTLN(location[0]);
-      DEBUG_PRINT("xTotal = "); DEBUG_PRINTLN(xTotal);
-      DEBUG_PRINT(i); DEBUG_PRINT(" yLocation = "); DEBUG_PRINTLN(location[1]);
-      DEBUG_PRINT("yTotal = "); DEBUG_PRINTLN(yTotal);
-    }
+    readRadio();
+    xTotal = xTotal + receivedLocation[0];
+    yTotal = yTotal + receivedLocation[1];
   }
 
   xCalibrated = xTotal / CALIBRATIONFACTOR; //Average the x location
@@ -240,5 +220,30 @@ int checkYmovement()
   else //No movement
   {
     return 0;
+  }
+}
+
+void readRadio()
+{
+  radio.stopListening();  //Stop listening to send command
+
+  if (radio.write(&sendData, sizeof(sendData)))  //Send command boolean
+  {
+    if(!radio.available())
+    {
+      //Nothing there
+      DEBUG_PRINTLN("Blank response");
+    }
+    else
+    {
+      while(radio.available())
+      {
+        radio.read(&receivedLocation, sizeof(receivedLocation));
+      }
+    }
+  }
+  else
+  {
+    DEBUG_PRINTLN("Sending failed");
   }
 }
