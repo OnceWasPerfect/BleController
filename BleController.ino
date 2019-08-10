@@ -32,12 +32,9 @@ PushButton mainButton(MAINBUTTONPIN);  //Main button
 PushButton scrollButton(SCROLLBUTTONPIN);  //Scroll button
 bool bolScroll = false;  //Is scroll mode active
 
-//Accelerometer data setup
-int xCalibrated = 0;  //Base value for x
-int yCalibrated = 0;  //Base value for y
-int xDistance = 0;  //Movement of x axis
-int yDistance = 0;  //Movement of y axis
+//Location data setup
 int receivedLocation[] = {0,0}; //Data from foot
+int restingPosition[] = {0,0};
 
 //Radio setup
 RF24 radio(RADIOCEPIN, RADIOCSNPIN); // create radio object CE, CSN
@@ -47,6 +44,7 @@ bool sendData = true;  //Tell foot to send data
 void setup()
 {
   DEBUG_BEGIN(115200);
+  
   //Button setup
   pinMode(MAINBUTTONPIN, INPUT_PULLUP);  //Set button pin with pullup
   pinMode(SCROLLBUTTONPIN, INPUT_PULLUP);  //Set button pin with pullup
@@ -63,8 +61,7 @@ void setup()
   radio.startListening();  //Start listening for acknowledge
   
   //Calibrate Accelerometer
-  calibrate();
-  DEBUG_PRINTLN("After calibrate setup");
+  averageLocation(restingPosition);
   
   //Start bluetooth
   initializeBluefruit();
@@ -72,6 +69,10 @@ void setup()
 
 void loop()
 {
+  //Setup variables
+  int xDistance = 0;  //Movement of x axis
+  int yDistance = 0;  //Movement of y axis
+
   //Update buttons
   scrollButton.update();
   mainButton.update();
@@ -80,7 +81,7 @@ void loop()
   //Check for button events
   if (scrollButton.isActive() && mainButton.isActive())  //Click both to calibrate
   {
-    calibrate();
+    averageLocation(restingPosition);  //Reset resting position
   }
   else
   {
@@ -99,8 +100,9 @@ void loop()
   }
 
   //checkmovement functions return 0,1, or -1, then multiply by the RANGE
-  xDistance = checkXmovement() * RANGE;
-  yDistance = checkYmovement() * RANGE;
+  checkMovement(xDistance, yDistance);
+  xDistance = xDistance * RANGE;
+  yDistance = yDistance * RANGE;
 
   //If not zero move
   if ((xDistance != 0) || (yDistance != 0))
@@ -122,108 +124,7 @@ void loop()
   delay(RESPONSEDELAY);
 }
 
-//Average the x movement to reduce jitters
-int averageX ()
-{
-  int average = 0;
-  long total = 0L;
-  int location[] = {0,0};
-
-  for(int i = 0; i < AVERAGEFACTOR; i++)
-  {
-    readRadio();
-    total = total + receivedLocation[0];
-  }
-  
-  average = total / AVERAGEFACTOR;  //Get the average
-  return average;
-}
-
-//Average the y movement to reduce jitters
-int averageY ()
-{
-  int average = 0;
-  long total = 0L;
-
-  for(int i = 0; i < AVERAGEFACTOR; i++)
-  {
-    readRadio();
-    total = total + receivedLocation[1];
-  }
-  
-  average = total / AVERAGEFACTOR;  //Get the average
-  return average;  
-}
-
-//Calibrate resting position
-void calibrate ()
-{
-  long xTotal = 0L;
-  long yTotal = 0L;
-  int location[] = {0,0};
-
-  for (int i = 0; i < CALIBRATIONFACTOR; i++)  //Sample location CALIBRATIONFACTOR times
-  {
-    readRadio();
-    xTotal = xTotal + receivedLocation[0];
-    yTotal = yTotal + receivedLocation[1];
-  }
-
-  xCalibrated = xTotal / CALIBRATIONFACTOR; //Average the x location
-  yCalibrated = yTotal / CALIBRATIONFACTOR;  //Average the y location
-  DEBUG_PRINT("xCalibrated = ");DEBUG_PRINTLN(xCalibrated);
-  DEBUG_PRINT("yCalibrated = ");DEBUG_PRINTLN(yCalibrated);
-}
-
-//Check for x movement
-int checkXmovement()
-{
-  long newX = averageX();    //Get current location
-  long difference = newX - xCalibrated;  //Calculate movement from calibrated
-
-  //check to see if movment
-  if (abs(difference) > DEADZONE)  //Movement greater than deadzone
-  {
-    if(newX > xCalibrated) //Moved right
-    {
-      return 1;
-    }
-    else if(newX < xCalibrated) //Moved left
-    {
-      return -1;
-    }
-  }
-  else //No movement
-  {
-    return 0;
-  }
-}
-
-//Check for y movement
-int checkYmovement()
-{
-  long newY = averageY();    //Get current location
-  long difference = newY - yCalibrated;  //Calculate movement from calibrated
-
-  //check to see if movment
-  if (abs(difference) > DEADZONE)  //Movement greater than deadzon
-  {
-    if(newY > yCalibrated)  //Moved down
-    {
-      return -1;  
-    }
-    else if(newY < yCalibrated)  //Moved up
-    {
-      return 1;  
-    }
-  }
-  else //No movement
-  {
-    return 0;
-  }
-}
-
-void readRadio()
+bool readRadio()
 {
   radio.stopListening();  //Stop listening to send command
 
@@ -233,17 +134,90 @@ void readRadio()
     {
       //Nothing there
       DEBUG_PRINTLN("Blank response");
+      return false;  //Didn't receive data
     }
     else
     {
       while(radio.available())
       {
-        radio.read(&receivedLocation, sizeof(receivedLocation));
+        radio.read(&receivedLocation, sizeof(receivedLocation)); //Get the location data from foot
+        return true;  //Say we got good data
       }
     }
   }
   else
   {
     DEBUG_PRINTLN("Sending failed");
+    return false;  //Didn't receive data
+  }
+
+  radio.startListening();  //Start listening again
+}
+
+void averageLocation(int currentLocation[2])
+{
+  int total[] = {0,0};  //Place to store the totals
+  
+  for (int i = 0; i < AVERAGEFACTOR;)
+  {
+    if(readRadio())  //If received a good value
+    {
+      total[0] += receivedLocation[0];  //add the x value to total
+      total[1] += receivedLocation[1];  //add the y value to total
+      i++;  //Only increment if good value (can cause infinite loop if never get good data)
+    }
+    else
+    {
+      //didn't get a value so don't increment i
+    }
+  }
+
+  currentLocation[0] = total[0] / AVERAGEFACTOR;  //Average the x axis
+  currentLocation[1] = total[1] / AVERAGEFACTOR;  //Average the y axis
+}
+
+void checkMovement(int &x, int &y)
+{
+  int location[] = {0,0};  //Place to store location data
+  averageLocation(location);  //Get current location data
+  long difference[] = {0,0};  //Place to store the difference between current location and resting location
+
+  for(int i = 0; i < 2; i++)  //get the difference in x and y from resting
+  {
+    difference[i] = location[i] - restingPosition[i];
+  }
+
+  //Check x axis for movement
+  if (abs(difference[0]) > DEADZONE)  //Movement greater than deadzone
+  {
+    if(location[0] > restingPosition[0]) //Moved right
+    {
+      x = 1;
+    }
+    else if(location[0] < restingPosition[0]) //Moved left
+    {
+      x = -1;
+    }
+  }
+  else //No movement
+  {
+    x = 0;
+  }
+
+  //Check y axis for movement
+  if (abs(difference[1]) > DEADZONE)  //Movement greater than deadzon
+  {
+    if(location[1] > restingPosition[1])  //Moved down
+    {
+      y = -1;  
+    }
+    else if(location[1] < restingPosition[1])  //Moved up
+    {
+      y = 1;  
+    }
+  }
+  else //No movement
+  {
+    y = 0;
   }
 }
