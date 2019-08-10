@@ -49,9 +49,11 @@ void loop()
     location[1] = lis.y;  //store y axis
 
     //Send data via radio
-    radio.write(&location, sizeof(location)); 
-    DEBUG_PRINT("x = "); DEBUG_PRINTLN(location[0]);
-    DEBUG_PRINT("y = "); DEBUG_PRINTLN(location[1]);
+    //radio.write(&location, sizeof(location)); 
+    int test[] = {1234, 4321};
+    radio.write(&test, sizeof(test));
+    DEBUG_PRINT("x = "); DEBUG_PRINTLN(test[0]);
+    DEBUG_PRINT("y = "); DEBUG_PRINTLN(test[1]);
     
     delay(10);  //small delay to let it finish
 }
