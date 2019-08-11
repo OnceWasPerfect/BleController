@@ -166,7 +166,7 @@ bool readRadio()
 void averageLocation(int currentLocation[2])
 {
   DEBUG_PRINTLN("Start of averageLocation");
-  int total[] = {0,0};  //Place to store the totals
+  long total[] = {0,0};  //Place to store the totals
   bool goodRead = false;
   
   for (int i = 0; i < AVERAGEFACTOR;)
@@ -178,6 +178,7 @@ void averageLocation(int currentLocation[2])
       total[1] += receivedLocation[1];  //add the y value to total
       i++;  //Only increment if good value (can cause infinite loop if never get good data)
       DEBUG_PRINT("Inside averageLocation for loop i = "); DEBUG_PRINTLN(i);
+      DEBUG_PRINT("Total x = "); DEBUG_PRINT(total[0]); DEBUG_PRINT(" y = "); DEBUG_PRINTLN(total[1]);
     }
     else
     {
