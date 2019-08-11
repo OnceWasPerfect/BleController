@@ -16,8 +16,8 @@
  #define DEBUG_BEGIN(x)
 #endif
 
-#define RADIOCEPIN 10  //Chip enable pin for radio
-#define RADIOCSNPIN 9 //Chip select pin for radio
+#define RADIOCEPIN 9  //Chip enable pin for radio
+#define RADIOCSNPIN 10 //Chip select pin for radio
 
 //Accelerometer setup
 Adafruit_LIS3DH lis = Adafruit_LIS3DH();  //Create acc object
