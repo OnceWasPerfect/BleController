@@ -51,24 +51,28 @@ void setup()
   radio.openReadingPipe(1, address[1]);  //Start the reading pipe
   radio.setPALevel(RF24_PA_LOW);  //How strong to send the signal
   radio.setDataRate(RF24_2MBPS);
-  radio.stopListening();  //Start listening for send command
+  radio.startListening();  //Start listening for send command
 }
 
 void loop()
 {
-  lis.read();
-  location.x = lis.x;
-  location.y = lis.y;
+  if(radio.available())  //Listen for radio
+  {
+    while(radio.available())  //While there is something to read
+    {
+      radio.read(&sendData, sizeof(sendData));  //Receive control signal
+      DEBUG_PRINT("sendData = ");DEBUG_PRINTLN(sendData);
+    }
 
-  if(!radio.write(&location, sizeof(location)))
-  {
-    DEBUG_PRINTLN("Sending failed");
+    lis.read();  //Update location from accelerometer
+    location.x = lis.x;  //store x axis location
+    location.y = lis.y;  //store y axis location
+
+    radio.stopListening();  //Stop listening so we can send location
+    
+    radio.write(&location, sizeof(location));  //Send location data
+    DEBUG_PRINT("X = ");DEBUG_PRINT(location.x);DEBUG_PRINT(" Y = ");DEBUG_PRINTLN(location.y);
+    radio.startListening();  //start listening for nexxt transmission
   }
-  else
-  {
-    DEBUG_PRINTLN("Sent Data");
-  }
-  
-  delay(100);
 }
   
