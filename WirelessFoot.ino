@@ -51,32 +51,24 @@ void setup()
   radio.openReadingPipe(1, address[1]);  //Start the reading pipe
   radio.setPALevel(RF24_PA_LOW);  //How strong to send the signal
   radio.setDataRate(RF24_2MBPS);
-  radio.startListening();  //Start listening for send command
+  radio.stopListening();  //Start listening for send command
 }
 
 void loop()
 {
-  while (radio.available())  //Look for send command
+  lis.read();
+  location.x = lis.x;
+  location.y = lis.y;
+
+  if(!radio.write(&location, sizeof(location)))
   {
-      DEBUG_PRINTLN("Inside radio.available()");
-    radio.read(&sendData, sizeof(sendData));  //Read in command
-      DEBUG_PRINT("sendData = "); DEBUG_PRINTLN(sendData);
-    if(sendData == true)  //If feather wants data
-    {
-      //Read from accelerometer
-      lis.read();  //Get new location data
-      location.x = lis.x;  //store x axis
-      location.y = lis.y;  //store y axis
-      DEBUG_PRINTLN("Before Radio");
-      DEBUG_PRINT("x = ");DEBUG_PRINT(location.x); DEBUG_PRINT(" y = "); DEBUG_PRINTLN(location.y);
-      location.x = 1;
-      location.y = 2;
-      radio.writeAckPayload(1, &location, sizeof(location));  //Write the data
-      DEBUG_PRINTLN("After Radio");
-      DEBUG_PRINT("x = ");DEBUG_PRINT(location.x); DEBUG_PRINT(" y = "); DEBUG_PRINTLN(location.y);
-      sendData = false;  //Reset to look for next read command
-    }
-    delay(10);
-  }   
+    DEBUG_PRINTLN("Sending failed");
+  }
+  else
+  {
+    DEBUG_PRINTLN("Sent Data");
+  }
+  
+  delay(100);
 }
   
