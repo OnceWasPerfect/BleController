@@ -137,25 +137,43 @@ void loop()
 
 bool readRadio()
 {
-  DEBUG_PRINTLN("Start of readRadio");
-  bool goodRead = false;
+  unsigned long timesend = 0;
+  bool timeout = false;
+  
+  radio.stopListening();
 
-  if(radio.available())
+  timesend = micros();
+  if(radio.write(&sendData, sizeof(sendData)))
   {
-    while(radio.available())
+    radio.startListening();
+    while(!radio.available())
     {
-      radio.read(&location, sizeof(location));
-      DEBUG_PRINTLN("Received data");
-      DEBUG_PRINT("x = ");DEBUG_PRINT(location.x);DEBUG_PRINT(" y = ");DEBUG_PRINTLN(location.y);
-      return true;
+      if (micros() - timesend > 100000)
+      {
+        timeout = true;
+        break;
+      }
     }
   }
   else
   {
-    DEBUG_PRINTLN("Didn't receive data");
+    DEBUG_PRINTLN("Sending failed");
     return false;
   }
+
+  radio.startListening();
   
+  if(timeout == true)
+  {
+    DEBUG_PRINTLN("Timeout");
+    return false;
+  }
+  else
+  {
+    radio.read(&location, sizeof(location));
+    DEBUG_PRINT("X = ");DEBUG_PRINT(location.x);DEBUG_PRINT(" Y = ");DEBUG_PRINTLN(location.y);
+    return true;
+  }
 }
 
 void averageLocation(int currentLocation[2])
