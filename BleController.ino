@@ -128,6 +128,7 @@ void loop()
 bool readRadio()
 {
   DEBUG_PRINTLN("Start of readRadio");
+  bool goodRead = false;
   radio.stopListening();  //Stop listening to send command
 
   if (radio.write(&sendData, sizeof(sendData)))  //Send command boolean
@@ -137,7 +138,7 @@ bool readRadio()
     {
       //Nothing there
       DEBUG_PRINTLN("Blank response");
-      return false;  //Didn't receive data
+      goodRead = false;  //Didn't receive data
     }
     else
     {
@@ -146,7 +147,7 @@ bool readRadio()
         radio.read(&receivedLocation, sizeof(receivedLocation)); //Get the location data from foot
         DEBUG_PRINTLN("Got reading from radio");
         DEBUG_PRINT("Data from radio: x = ");DEBUG_PRINT(receivedLocation[0]);DEBUG_PRINT(" y = ");DEBUG_PRINTLN(receivedLocation[1]);
-        return true;  //Say we got good data
+        goodRead = true;  //Say we got good data
       }
       DEBUG_PRINTLN("In readRadio else loop but not while is available loop");
       DEBUG_PRINT("Data from radio in else loop: x = ");DEBUG_PRINT(receivedLocation[0]);DEBUG_PRINT(" y = ");DEBUG_PRINTLN(receivedLocation[1]);
@@ -157,10 +158,11 @@ bool readRadio()
   else
   {
     DEBUG_PRINTLN("Sending failed");
-    return false;  //Didn't receive data
+    goodRead = false;  //Didn't receive data
   }
 
   radio.startListening();  //Start listening again
+  return goodRead;
 }
 
 void averageLocation(int currentLocation[2])
