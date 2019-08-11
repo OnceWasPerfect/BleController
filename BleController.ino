@@ -33,7 +33,7 @@ PushButton scrollButton(SCROLLBUTTONPIN);  //Scroll button
 bool bolScroll = false;  //Is scroll mode active
 
 //Location data setup
-int receivedLocation[] = {0,0}; //Data from foot
+int receivedLocation[] = {0,0,0}; //Data from foot
 int restingPosition[] = {0,0};
 
 //Radio setup
@@ -57,7 +57,8 @@ void setup()
   radio.enableDynamicPayloads();  //Acknowledge response is a daynamic payload
   radio.openWritingPipe(address[1]);  //Start the writing pipe
   radio.openReadingPipe(1, address[0]);  //Start the reading pipe
-  radio.setPALevel(RF24_PA_MIN);  //How strong to send the signal
+  radio.setPALevel(RF24_PA_LOW);  //How strong to send the signal
+  radio.setDataRate(RF24_2MBPS);
   radio.startListening();  //Start listening for acknowledge
   
   DEBUG_PRINTLN("Before first calibration");
@@ -144,9 +145,9 @@ bool readRadio()
     {
       while(radio.available())
       {
-        radio.read(&receivedLocation, sizeof(receivedLocation)); //Get the location data from foot
+        radio.read(receivedLocation, sizeof(receivedLocation)); //Get the location data from foot
         DEBUG_PRINTLN("Got reading from radio");
-        DEBUG_PRINT("Data from radio: x = ");DEBUG_PRINT(receivedLocation[0]);DEBUG_PRINT(" y = ");DEBUG_PRINTLN(receivedLocation[1]);
+        DEBUG_PRINT("Data from radio: x = ");DEBUG_PRINT(receivedLocation[0]);DEBUG_PRINT(" y = ");DEBUG_PRINT(receivedLocation[1]); DEBUG_PRINT(" check = "); DEBUG_PRINTLN(receivedLocation[2]);
         goodRead = true;  //Say we got good data
       }
       DEBUG_PRINTLN("In readRadio else loop but not while is available loop");
