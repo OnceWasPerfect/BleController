@@ -60,6 +60,7 @@ void setup()
   radio.setPALevel(RF24_PA_MIN);  //How strong to send the signal
   radio.startListening();  //Start listening for acknowledge
   
+  DEBUG_PRINTLN("Before first calibration");
   //Calibrate Accelerometer
   averageLocation(restingPosition);
   
@@ -126,10 +127,12 @@ void loop()
 
 bool readRadio()
 {
+  DEBUG_PRINTLN("Start of readRadio");
   radio.stopListening();  //Stop listening to send command
 
   if (radio.write(&sendData, sizeof(sendData)))  //Send command boolean
   {
+    DEBUG_PRINTLN("Start of readRAdio if");
     if(!radio.available())
     {
       //Nothing there
@@ -141,9 +144,15 @@ bool readRadio()
       while(radio.available())
       {
         radio.read(&receivedLocation, sizeof(receivedLocation)); //Get the location data from foot
+        DEBUG_PRINTLN("Got reading from radio");
+        DEBUG_PRINT("Data from radio: x = ");DEBUG_PRINT(receivedLocation[0]);DEBUG_PRINT(" y = ");DEBUG_PRINTLN(receivedLocation[1]);
         return true;  //Say we got good data
       }
+      DEBUG_PRINTLN("In readRadio else loop but not while is available loop");
+      DEBUG_PRINT("Data from radio in else loop: x = ");DEBUG_PRINT(receivedLocation[0]);DEBUG_PRINT(" y = ");DEBUG_PRINTLN(receivedLocation[1]);
     }
+    DEBUG_PRINTLN("Bottom of radio read if");
+    DEBUG_PRINT("Data from bottom of radioRead if: x = ");DEBUG_PRINT(receivedLocation[0]);DEBUG_PRINT(" y = ");DEBUG_PRINTLN(receivedLocation[1]);
   }
   else
   {
@@ -156,19 +165,24 @@ bool readRadio()
 
 void averageLocation(int currentLocation[2])
 {
+  DEBUG_PRINTLN("Start of averageLocation");
   int total[] = {0,0};  //Place to store the totals
+  bool goodRead = false;
   
   for (int i = 0; i < AVERAGEFACTOR;)
   {
-    if(readRadio())  //If received a good value
+    goodRead = readRadio();
+    if(goodRead)  //If received a good value
     {
       total[0] += receivedLocation[0];  //add the x value to total
       total[1] += receivedLocation[1];  //add the y value to total
       i++;  //Only increment if good value (can cause infinite loop if never get good data)
+      DEBUG_PRINT("Inside averageLocation for loop i = "); DEBUG_PRINTLN(i);
     }
     else
     {
       //didn't get a value so don't increment i
+      DEBUG_PRINTLN("In else of averageLocation no good read");
     }
   }
 
