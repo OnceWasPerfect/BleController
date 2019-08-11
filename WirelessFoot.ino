@@ -21,7 +21,7 @@
 
 //Accelerometer setup
 Adafruit_LIS3DH lis = Adafruit_LIS3DH();  //Create acc object
-int location[] = {0, 0};
+int location[] = {0, 0, 69};
 
 //Radio setup
 RF24 radio(RADIOCEPIN, RADIOCSNPIN); // Set up the radio object CE, CSN
@@ -41,7 +41,8 @@ void setup()
   radio.enableDynamicPayloads();  //Acknowledge response is a daynamic payload
   radio.openWritingPipe(address[0]);  //Start the writing pipe
   radio.openReadingPipe(1, address[1]);  //Start the reading pipe
-  radio.setPALevel(RF24_PA_MIN);  //How strong to send the signal
+  radio.setPALevel(RF24_PA_LOW);  //How strong to send the signal
+  radio.setDataRate(RF24_2MBPS);
   radio.startListening();  //Start listening for send command
 }
 
@@ -60,7 +61,7 @@ void loop()
       location[1] = lis.y;  //store y axis
       DEBUG_PRINTLN("Before Radio");
       DEBUG_PRINT("x = ");DEBUG_PRINT(location[0]); DEBUG_PRINT(" y = "); DEBUG_PRINTLN(location[1]);
-      radio.writeAckPayload(1, location, sizeof(location));  //Write the data
+      radio.writeAckPayload(1, &location, sizeof(location));  //Write the data
       DEBUG_PRINTLN("After Radio");
       DEBUG_PRINT("x = ");DEBUG_PRINT(location[0]); DEBUG_PRINT(" y = "); DEBUG_PRINTLN(location[1]);
       sendData = false;  //Reset to look for next read command
