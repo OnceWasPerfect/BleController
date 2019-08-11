@@ -67,7 +67,6 @@ void setup()
   radio.openWritingPipe(address[1]);  //Start the writing pipe
   radio.openReadingPipe(1, address[0]);  //Start the reading pipe
   radio.setPALevel(RF24_PA_LOW);  //How strong to send the signal
-  radio.setDataRate(RF24_2MBPS);
   radio.startListening();  //Start listening for acknowledge
   
   DEBUG_PRINTLN("Before first calibration");
