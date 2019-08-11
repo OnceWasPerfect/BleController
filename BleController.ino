@@ -27,13 +27,22 @@
 #define RADIOCEPIN 28  //Controller enable pin for radio
 #define RADIOCSNPIN 29  //Controller select pin for radio
 
+//Setup up a struct to pass the data
+typedef struct data
+{
+  int x;  //Will hold the x axis info
+  int y;  //Will hold the y axis info
+  int test;  //future use
+};
+data location;  //create data object
+
 //Button setup
 PushButton mainButton(MAINBUTTONPIN);  //Main button
 PushButton scrollButton(SCROLLBUTTONPIN);  //Scroll button
 bool bolScroll = false;  //Is scroll mode active
 
 //Location data setup
-int receivedLocation[] = {0,0,0}; //Data from foot
+//int receivedLocation[] = {0,0,0}; //Data from foot
 int restingPosition[] = {0,0};
 
 //Radio setup
@@ -145,16 +154,16 @@ bool readRadio()
     {
       while(radio.available())
       {
-        radio.read(receivedLocation, sizeof(receivedLocation)); //Get the location data from foot
+        radio.read(&location, sizeof(location)); //Get the location data from foot
         DEBUG_PRINTLN("Got reading from radio");
-        DEBUG_PRINT("Data from radio: x = ");DEBUG_PRINT(receivedLocation[0]);DEBUG_PRINT(" y = ");DEBUG_PRINT(receivedLocation[1]); DEBUG_PRINT(" check = "); DEBUG_PRINTLN(receivedLocation[2]);
+        DEBUG_PRINT("Data from radio: x = ");DEBUG_PRINT(location.x);DEBUG_PRINT(" y = ");DEBUG_PRINT(location.y); DEBUG_PRINT(" check = "); DEBUG_PRINTLN(location.test);
         goodRead = true;  //Say we got good data
       }
       DEBUG_PRINTLN("In readRadio else loop but not while is available loop");
-      DEBUG_PRINT("Data from radio in else loop: x = ");DEBUG_PRINT(receivedLocation[0]);DEBUG_PRINT(" y = ");DEBUG_PRINTLN(receivedLocation[1]);
+      DEBUG_PRINT("Data from radio in else loop: x = ");DEBUG_PRINT(location.x);DEBUG_PRINT(" y = ");DEBUG_PRINT(location.y); DEBUG_PRINT(" check = "); DEBUG_PRINTLN(location.test);
     }
     DEBUG_PRINTLN("Bottom of radio read if");
-    DEBUG_PRINT("Data from bottom of radioRead if: x = ");DEBUG_PRINT(receivedLocation[0]);DEBUG_PRINT(" y = ");DEBUG_PRINTLN(receivedLocation[1]);
+    DEBUG_PRINT("Data from bottom of radioRead if: x = ");DEBUG_PRINT(location.x);DEBUG_PRINT(" y = ");DEBUG_PRINT(location.y); DEBUG_PRINT(" check = "); DEBUG_PRINTLN(location.test);
   }
   else
   {
@@ -170,15 +179,13 @@ void averageLocation(int currentLocation[2])
 {
   DEBUG_PRINTLN("Start of averageLocation");
   long total[] = {0,0};  //Place to store the totals
-  bool goodRead = false;
   
   for (int i = 0; i < AVERAGEFACTOR;)
   {
-    goodRead = readRadio();
-    if(goodRead)  //If received a good value
+    if(readRadio())  //If received a good value
     {
-      total[0] += receivedLocation[0];  //add the x value to total
-      total[1] += receivedLocation[1];  //add the y value to total
+      total[0] += location.x;  //add the x value to total
+      total[1] += location.y;  //add the y value to total
       i++;  //Only increment if good value (can cause infinite loop if never get good data)
       DEBUG_PRINT("Inside averageLocation for loop i = "); DEBUG_PRINTLN(i);
       DEBUG_PRINT("Total x = "); DEBUG_PRINT(total[0]); DEBUG_PRINT(" y = "); DEBUG_PRINTLN(total[1]);
