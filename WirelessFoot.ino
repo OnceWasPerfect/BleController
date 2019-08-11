@@ -19,9 +19,17 @@
 #define RADIOCEPIN 10  //Chip enable pin for radio
 #define RADIOCSNPIN 9 //Chip select pin for radio
 
+//Setup up a struct to pass the data
+typedef struct data
+{
+  int x;  //Will hold the x axis info
+  int y;  //Will hold the y axis info
+  int test;  //future use
+};
+data location;  //create data object
+
 //Accelerometer setup
 Adafruit_LIS3DH lis = Adafruit_LIS3DH();  //Create acc object
-int location[] = {0, 0, 69};
 
 //Radio setup
 RF24 radio(RADIOCEPIN, RADIOCSNPIN); // Set up the radio object CE, CSN
@@ -57,15 +65,16 @@ void loop()
     {
       //Read from accelerometer
       lis.read();  //Get new location data
-      location[0] = lis.x;  //store x axis
-      location[1] = lis.y;  //store y axis
+      location.x = lis.x;  //store x axis
+      location.y = lis.y;  //store y axis
       DEBUG_PRINTLN("Before Radio");
-      DEBUG_PRINT("x = ");DEBUG_PRINT(location[0]); DEBUG_PRINT(" y = "); DEBUG_PRINTLN(location[1]);
+      DEBUG_PRINT("x = ");DEBUG_PRINT(location.x); DEBUG_PRINT(" y = "); DEBUG_PRINTLN(location.y);
       radio.writeAckPayload(1, &location, sizeof(location));  //Write the data
       DEBUG_PRINTLN("After Radio");
-      DEBUG_PRINT("x = ");DEBUG_PRINT(location[0]); DEBUG_PRINT(" y = "); DEBUG_PRINTLN(location[1]);
+      DEBUG_PRINT("x = ");DEBUG_PRINT(location.x); DEBUG_PRINT(" y = "); DEBUG_PRINTLN(location.y);
       sendData = false;  //Reset to look for next read command
     }
+    delay(10);
   }   
 }
   
