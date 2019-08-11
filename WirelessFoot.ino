@@ -16,8 +16,8 @@
  #define DEBUG_BEGIN(x)
 #endif
 
-#define RADIOCEPIN 9  //Chip enable pin for radio
-#define RADIOCSNPIN 10 //Chip select pin for radio
+#define RADIOCEPIN 10  //Chip enable pin for radio
+#define RADIOCSNPIN 9 //Chip select pin for radio
 
 //Accelerometer setup
 Adafruit_LIS3DH lis = Adafruit_LIS3DH();  //Create acc object
@@ -58,8 +58,11 @@ void loop()
       lis.read();  //Get new location data
       location[0] = lis.x;  //store x axis
       location[1] = lis.y;  //store y axis
-
+      DEBUG_PRINTLN("Before Radio");
+      DEBUG_PRINT("x = ");DEBUG_PRINT(location[0]); DEBUG_PRINT(" y = "); DEBUG_PRINTLN(location[1]);
       radio.writeAckPayload(1, location, sizeof(location));  //Write the data
+      DEBUG_PRINTLN("After Radio");
+      DEBUG_PRINT("x = ");DEBUG_PRINT(location[0]); DEBUG_PRINT(" y = "); DEBUG_PRINTLN(location[1]);
       sendData = false;  //Reset to look for next read command
     }
   }   
