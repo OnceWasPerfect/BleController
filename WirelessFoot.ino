@@ -50,7 +50,6 @@ void setup()
   radio.openWritingPipe(address[0]);  //Start the writing pipe
   radio.openReadingPipe(1, address[1]);  //Start the reading pipe
   radio.setPALevel(RF24_PA_LOW);  //How strong to send the signal
-  radio.setDataRate(RF24_2MBPS);
   radio.startListening();  //Start listening for send command
 }
 
@@ -74,5 +73,6 @@ void loop()
     DEBUG_PRINT("X = ");DEBUG_PRINT(location.x);DEBUG_PRINT(" Y = ");DEBUG_PRINTLN(location.y);
     radio.startListening();  //start listening for nexxt transmission
   }
+  DEBUG_PRINTLN("Radio not available");
 }
   
