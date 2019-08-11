@@ -69,6 +69,8 @@ void loop()
       location.y = lis.y;  //store y axis
       DEBUG_PRINTLN("Before Radio");
       DEBUG_PRINT("x = ");DEBUG_PRINT(location.x); DEBUG_PRINT(" y = "); DEBUG_PRINTLN(location.y);
+      location.x = 1;
+      location.y = 2;
       radio.writeAckPayload(1, &location, sizeof(location));  //Write the data
       DEBUG_PRINTLN("After Radio");
       DEBUG_PRINT("x = ");DEBUG_PRINT(location.x); DEBUG_PRINT(" y = "); DEBUG_PRINTLN(location.y);
