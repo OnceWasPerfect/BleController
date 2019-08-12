@@ -24,8 +24,8 @@
 #define DEADZONE 200  //How far before movement registered
 #define MAINBUTTONPIN 27 //Pin for main button
 #define SCROLLBUTTONPIN 30 //Pin for scroll button
-#define RADIOCEPIN 28  //Controller enable pin for radio
-#define RADIOCSNPIN 29  //Controller select pin for radio
+#define RADIOCEPIN 4  //Controller enable pin for radio
+#define RADIOCSNPIN 5  //Controller select pin for radio
 
 //Setup up a struct to pass the data
 typedef struct data
