@@ -156,11 +156,11 @@ bool readRadio()
   }
   else
   {
+    radio.startListening();
     DEBUG_PRINTLN("Sending failed");
     return false;
   }
 
-  radio.startListening();
   
   if(timeout == true)
   {
