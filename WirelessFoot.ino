@@ -1,8 +1,7 @@
 #include <Adafruit_LIS3DH.h>  //Accelerometer library
 #include <Adafruit_Sensor.h>  //Accelerometer library
 #include <SPI.h>  //SPI hardware library
-#include <nRF24L01.h>  //Wireless tranceiver library
-#include <RF24.h>  //Wireless tranceiver library
+#include "RadioConfig.h"  //Radio setup routine
 
 //Debug setup
 #define DEBUG //comment out to disable debug
@@ -24,17 +23,11 @@ typedef struct data
 {
   int x;  //Will hold the x axis info
   int y;  //Will hold the y axis info
-  int test;  //future use
 };
 data location;  //create data object
 
 //Accelerometer setup
 Adafruit_LIS3DH lis = Adafruit_LIS3DH();  //Create acc object
-
-//Radio setup
-RF24 radio(RADIOCEPIN, RADIOCSNPIN); // Set up the radio object CE, CSN
-const byte address[][6] = {"00001", "00002"};  //The address the radio will work on
-bool sendData = false;  //Did feather ask for data?
 
 void setup()
 {
@@ -44,35 +37,20 @@ void setup()
   lis.setRange(LIS3DH_RANGE_16_G);  //Set RANGE for accelerometer 2, 4, 8 or 16 G!
 
   //Radio setup
-  radio.begin();  //Start the radio object
-  radio.enableAckPayload();  //Enable the acknowledge response
-  radio.enableDynamicPayloads();  //Acknowledge response is a daynamic payload
-  radio.openWritingPipe(address[0]);  //Start the writing pipe
-  radio.openReadingPipe(1, address[1]);  //Start the reading pipe
-  radio.setPALevel(RF24_PA_LOW);  //How strong to send the signal
-  radio.startListening();  //Start listening for send command
+  radioSetup();
 }
 
 void loop()
 {
-  if(radio.available())  //Listen for radio
-  {
-    while(radio.available())  //While there is something to read
-    {
-      radio.read(&sendData, sizeof(sendData));  //Receive control signal
-      DEBUG_PRINT("sendData = ");DEBUG_PRINTLN(sendData);
-    }
+  //Get new accelerometer reading
+  lis.read();
 
-    lis.read();  //Update location from accelerometer
-    location.x = lis.x;  //store x axis location
-    location.y = lis.y;  //store y axis location
+  //Stick in location object
+  location.x = lis.x;
+  location.y = lis.y;
 
-    radio.stopListening();  //Stop listening so we can send location
-    
-    radio.write(&location, sizeof(location));  //Send location data
-    DEBUG_PRINT("X = ");DEBUG_PRINT(location.x);DEBUG_PRINT(" Y = ");DEBUG_PRINTLN(location.y);
-    radio.startListening();  //start listening for nexxt transmission
-  }
-  DEBUG_PRINTLN("Radio not available");
+  //Send location object
+  nrf24.send(location, sizeof(location));
+  nrf24.waitPacketSent();
 }
   
