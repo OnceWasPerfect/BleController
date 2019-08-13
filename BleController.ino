@@ -1,9 +1,8 @@
 #include "BluefruitRoutines.h"
+#include "RadioSetup.h"
 #include <Wire.h>
 #include <PushButton.h>
 #include <SPI.h>
-#include <nRF24L01.h>
-#include <RF24.h>
 
 //Debug setup
 #define DEBUG //comment out to disable debug
@@ -24,31 +23,24 @@
 #define DEADZONE 200  //How far before movement registered
 #define MAINBUTTONPIN 27 //Pin for main button
 #define SCROLLBUTTONPIN 30 //Pin for scroll button
-#define RADIOCEPIN 4  //Controller enable pin for radio
-#define RADIOCSNPIN 5  //Controller select pin for radio
 
 //Setup up a struct to pass the data
 typedef struct data
 {
   int x;  //Will hold the x axis info
   int y;  //Will hold the y axis info
-  int test;  //future use
 };
-data location;  //create data object
+data receivedLocation;  //create data object
+data calibrated;  //hold resting position
 
 //Button setup
 PushButton mainButton(MAINBUTTONPIN);  //Main button
 PushButton scrollButton(SCROLLBUTTONPIN);  //Scroll button
 bool bolScroll = false;  //Is scroll mode active
 
-//Location data setup
-//int receivedLocation[] = {0,0,0}; //Data from foot
-int restingPosition[] = {0,0};
-
-//Radio setup
-RF24 radio(RADIOCEPIN, RADIOCSNPIN); // create radio object CE, CSN
-const byte address[][6] = {"00001", "00002"};  //Address the radios will use
-bool sendData = true;  //Tell foot to send data
+//Stuff for radio
+uint8_t rxbuf[RH_NRF24_MAX_MESSAGE_LEN];  //Set up the receive buffer
+uint8_t rxbuflen = sizeof(rxbuf); //size of buffer
 
 void setup()
 {
@@ -61,17 +53,11 @@ void setup()
   mainButton.setActiveLogic(LOW);  //Make button active low
   
   //Setup radio
-  radio.begin();  //Start radio object
-  radio.enableAckPayload();  //Enable the acknowledge response
-  radio.enableDynamicPayloads();  //Acknowledge response is a daynamic payload
-  radio.openWritingPipe(address[1]);  //Start the writing pipe
-  radio.openReadingPipe(1, address[0]);  //Start the reading pipe
-  radio.setPALevel(RF24_PA_LOW);  //How strong to send the signal
-  radio.startListening();  //Start listening for acknowledge
-  
+  radioSetup();
+
   DEBUG_PRINTLN("Before first calibration");
   //Calibrate Accelerometer
-  averageLocation(restingPosition);
+  calibrated = averageLocation();
   
   //Start bluetooth
   initializeBluefruit();
@@ -91,7 +77,7 @@ void loop()
   //Check for button events
   if (scrollButton.isActive() && mainButton.isActive())  //Click both to calibrate
   {
-    averageLocation(restingPosition);  //Reset resting position
+    calibrated = averageLocation();  //Reset resting position
   }
   else
   {
@@ -136,90 +122,57 @@ void loop()
 
 bool readRadio()
 {
-  unsigned long timesend = 0;
-  bool timeout = false;
-  
-  radio.stopListening();
-
-  timesend = micros();
-  if(radio.write(&sendData, sizeof(sendData)))
+  if(nrf24.recv(rxbuf, &rxbuflen)) //Receive the radio payload
   {
-    radio.startListening();
-    while(!radio.available())
-    {
-      if (micros() - timesend > 100000)
-      {
-        timeout = true;
-        break;
-      }
-    }
-  }
-  else
-  {
-    radio.startListening();
-    DEBUG_PRINTLN("Sending failed");
-    return false;
-  }
-
-  
-  if(timeout == true)
-  {
-    DEBUG_PRINTLN("Timeout");
-    return false;
-  }
-  else
-  {
-    radio.read(&location, sizeof(location));
-    DEBUG_PRINT("X = ");DEBUG_PRINT(location.x);DEBUG_PRINT(" Y = ");DEBUG_PRINTLN(location.y);
+    memcpy(&receivedLocation, rxbuf, sizeof(receivedLocation));  //copy the payload to location 
     return true;
-  }
+  }  
+  else
+  {
+    return false;
+  }  
+  
 }
 
-void averageLocation(int currentLocation[2])
+data averageLocation()
 {
   DEBUG_PRINTLN("Start of averageLocation");
   long total[] = {0,0};  //Place to store the totals
+  data average; 
   
   for (int i = 0; i < AVERAGEFACTOR;)
   {
-    if(readRadio())  //If received a good value
+    if(readRadio())
     {
-      total[0] += location.x;  //add the x value to total
-      total[1] += location.y;  //add the y value to total
-      i++;  //Only increment if good value (can cause infinite loop if never get good data)
-      DEBUG_PRINT("Inside averageLocation for loop i = "); DEBUG_PRINTLN(i);
-      DEBUG_PRINT("Total x = "); DEBUG_PRINT(total[0]); DEBUG_PRINT(" y = "); DEBUG_PRINTLN(total[1]);
+      total[0] = receivedLocation.x;
+      total[1] = receivedLocation.y;
+      i++;
     }
-    else
-    {
-      //didn't get a value so don't increment i
-      DEBUG_PRINTLN("In else of averageLocation no good read");
-    }
+    
   }
 
-  currentLocation[0] = total[0] / AVERAGEFACTOR;  //Average the x axis
-  currentLocation[1] = total[1] / AVERAGEFACTOR;  //Average the y axis
+  average.x = total[0] / AVERAGEFACTOR;  //Average the x axis
+  average.y = total[1] / AVERAGEFACTOR;  //Average the y axis
+
+  return average;
 }
 
 void checkMovement(int &x, int &y)
 {
-  int location[] = {0,0};  //Place to store location data
-  averageLocation(location);  //Get current location data
+  data checkLocation = averageLocation();
   long difference[] = {0,0};  //Place to store the difference between current location and resting location
 
-  for(int i = 0; i < 2; i++)  //get the difference in x and y from resting
-  {
-    difference[i] = location[i] - restingPosition[i];
-  }
+  difference[0] = checkLocation.x - calibrated.x;
+  difference[1] = checkLocation.y - calibrated.y;
 
   //Check x axis for movement
   if (abs(difference[0]) > DEADZONE)  //Movement greater than deadzone
   {
-    if(location[0] > restingPosition[0]) //Moved right
+    if(checkLocation.x > calibrated.x) //Moved right
     {
       x = 1;
     }
-    else if(location[0] < restingPosition[0]) //Moved left
+    else if(checkLocation.x < calibrated.x) //Moved left
     {
       x = -1;
     }
@@ -232,11 +185,11 @@ void checkMovement(int &x, int &y)
   //Check y axis for movement
   if (abs(difference[1]) > DEADZONE)  //Movement greater than deadzon
   {
-    if(location[1] > restingPosition[1])  //Moved down
+    if(checkLocation.y > calibrated.y)  //Moved down
     {
       y = -1;  
     }
-    else if(location[1] < restingPosition[1])  //Moved up
+    else if(checkLocation.y < calibrated.y)  //Moved up
     {
       y = 1;  
     }
