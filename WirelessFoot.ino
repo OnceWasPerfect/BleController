@@ -1,7 +1,7 @@
+#include "headers\RadioSetup.h"  //Radio setup routine
 #include <Adafruit_LIS3DH.h>  //Accelerometer library
 #include <Adafruit_Sensor.h>  //Accelerometer library
 #include <SPI.h>  //SPI hardware library
-#include "RadioSetup.h"  //Radio setup routine
 
 //Debug setup
 #define DEBUG //comment out to disable debug
@@ -47,7 +47,7 @@ void loop()
   location.y = lis.y;
 
   //Send location object
-  nrf24.send(location, sizeof(location));
-  nrf24.waitPacketSent();
+  //nrf24.send(location, sizeof(location));
+  //nrf24.waitPacketSent();
 }
   
