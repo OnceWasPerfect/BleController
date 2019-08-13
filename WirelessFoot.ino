@@ -23,6 +23,8 @@ typedef struct data
 };
 data location;  //create data object
 
+byte tx_buf[sizeof(location)] = {0};  //buffer to send location
+
 //Accelerometer setup
 Adafruit_LIS3DH lis = Adafruit_LIS3DH();  //Create acc object
 
@@ -46,8 +48,10 @@ void loop()
   location.x = lis.x;
   location.y = lis.y;
 
+  memcpy(tx_buf, &location, sizeof(location));  //copy location to transmit buffer
+
   //Send location object
-  //nrf24.send(location, sizeof(location));
-  //nrf24.waitPacketSent();
+  nrf24.send((uint8_t *)tx_buf, sizeof(location));
+  nrf24.waitPacketSent();
 }
   
