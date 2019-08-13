@@ -1,7 +1,7 @@
 #include <Adafruit_LIS3DH.h>  //Accelerometer library
 #include <Adafruit_Sensor.h>  //Accelerometer library
 #include <SPI.h>  //SPI hardware library
-#include "RadioConfig.h"  //Radio setup routine
+#include "RadioSetup.h"  //Radio setup routine
 
 //Debug setup
 #define DEBUG //comment out to disable debug
@@ -14,9 +14,6 @@
  #define DEBUG_PRINTLN(x) 
  #define DEBUG_BEGIN(x)
 #endif
-
-#define RADIOCEPIN 10  //Chip enable pin for radio
-#define RADIOCSNPIN 9 //Chip select pin for radio
 
 //Setup up a struct to pass the data
 typedef struct data
