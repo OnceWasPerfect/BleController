@@ -30,7 +30,7 @@ typedef struct data
   int x;  //Will hold the x axis info
   int y;  //Will hold the y axis info
 };
-data receivedLocation;  //create data object
+data *receivedLocation;  //create data object
 data calibrated;  //hold resting position
 
 //Button setup
@@ -124,8 +124,9 @@ bool readRadio()
 {
   if(nrf24.recv(rxbuf, &rxbuflen)) //Receive the radio payload
   {
-    memcpy(&receivedLocation, rxbuf, sizeof(receivedLocation));  //copy the payload to location 
-    DEBUG_PRINT("Received X = ");DEBUG_PRINT(receivedLocation.x);DEBUG_PRINT("Received Y = ");DEBUG_PRINTLN(receivedLocation.y);
+    //memcpy(&receivedLocation, rxbuf, sizeof(receivedLocation));  //copy the payload to location 
+    receivedLocation = (struct data *)rxbuf; 
+    DEBUG_PRINT("Received X = ");DEBUG_PRINT(receivedLocation->x);DEBUG_PRINT(" Received Y = ");DEBUG_PRINTLN(receivedLocation->y);
     return true;
   }  
   else
@@ -146,8 +147,8 @@ data averageLocation()
   {
     if(readRadio())
     {
-      total[0] = receivedLocation.x;
-      total[1] = receivedLocation.y;
+      total[0] = receivedLocation->x;
+      total[1] = receivedLocation->y;
       i++;
     }
     
