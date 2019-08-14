@@ -13,8 +13,8 @@
  #define DEBUG_BEGIN(x)
 #endif
 
-#define RADIOCEPIN 10  //Chip enable pin for radio
-#define RADIOCSNPIN 9 //Chip select pin for radio
+#define RADIOCEPIN 4  //Chip enable pin for radio
+#define RADIOCSNPIN 5 //Chip select pin for radio
 
 RH_NRF24 nrf24(RADIOCEPIN, RADIOCSNPIN); // create radio object
 

@@ -125,10 +125,12 @@ bool readRadio()
   if(nrf24.recv(rxbuf, &rxbuflen)) //Receive the radio payload
   {
     memcpy(&receivedLocation, rxbuf, sizeof(receivedLocation));  //copy the payload to location 
+    DEBUG_PRINT("Received X = ");DEBUG_PRINT(receivedLocation.x);DEBUG_PRINT("Received Y = ");DEBUG_PRINTLN(receivedLocation.y);
     return true;
   }  
   else
   {
+    DEBUG_PRINTLN("readRadio failed");
     return false;
   }  
   
