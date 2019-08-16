@@ -1,7 +1,7 @@
 {
     "sketch": "BleController.ino",
-    "board": "adafruit:nrf52:feather52832",
-    "port": "COM15",
-    "configuration": "softdevice=s132v6,debug=l0",
+    "board": "arduino:avr:nano",
+    "port": "COM16",
+    "configuration": "cpu=atmega328",
     "programmer": "AVRISP mkII"
 }

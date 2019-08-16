@@ -21,8 +21,8 @@
 #define AVERAGEFACTOR 20  //How many captures per movement check
 #define CALIBRATIONFACTOR 200  //How many captures for calibration
 #define DEADZONE 200  //How far before movement registered
-#define MAINBUTTONPIN 27 //Pin for main button
-#define SCROLLBUTTONPIN 30 //Pin for scroll button
+#define MAINBUTTONPIN 2 //Pin for main button
+#define SCROLLBUTTONPIN 3 //Pin for scroll button
 
 //Setup up a struct to pass the data
 typedef struct data
@@ -87,11 +87,11 @@ void loop()
     }
     if (mainButton.isActive())  //Check for main button
     {
-      blehid.mouseButtonPress(MOUSE_BUTTON_LEFT);
+      ble.println("AT+BleHidMouseButton=L");  //Press but don't release to allow for dragging
     }
     if (mainButton.isReleased())
     {
-      blehid.mouseButtonRelease();
+      ble.println("AT+BleHidMouseButton=0");  //Release the button
     }
   }
 
@@ -106,14 +106,16 @@ void loop()
     //If not in scroll mode
     if (bolScroll == false)
     {
-      blehid.mouseMove(xDistance, yDistance);
+      String distance = convertMovement(xDistance,yDistance);  //Convert movement to string
+      ble.print("AT+BleHidMouseMove=");  //Move Mouse
+      ble.println(distance);
     }
     //If in scroll mode
     else
     {
-      blehid.mouseScroll(-yDistance/7);
-      blehid.mousePan(-xDistance/7);
-      //delay(200);
+      String distance = convertMovement(-yDistance/7,-xDistance/7); //Convert to string reversed for scroll
+      ble.print("AT+BleHidMouseMove=0,0,");  //Scroll mouse
+      ble.println(distance);
     }
   }
   
@@ -201,4 +203,13 @@ void checkMovement(int &x, int &y)
   {
     y = 0;
   }
+}
+
+//Convert to string for ble
+String convertMovement(int x, int y)
+{
+  String movement = String(x);  //Convert xDistance to string
+  movement += ",";  //Add the comma
+  movement += String(y);  //Convert yDistance to string and add it to the string
+  return movement;
 }
