@@ -2,5 +2,6 @@
     "sketch": "BleController.ino",
     "board": "adafruit:samd:adafruit_trinket_m0",
     "port": "COM12",
-    "configuration": "usbstack=arduino,debug=on"
+    "configuration": "usbstack=arduino,debug=on",
+    "programmer": "AVRISP mkII"
 }
