@@ -1,7 +1,7 @@
 {
     "sketch": "WirelessFoot.ino",
     "board": "arduino:avr:nano",
-    "port": "COM17",
-    "programmer": "AVRISP mkII",
+    "port": "COM16",
+    "programmer": "USBtinyISP",
     "configuration": "cpu=atmega328"
 }
