@@ -17,12 +17,12 @@
 #endif
 
 #define RANGE 7  //How far the mouse moves
-#define RESPONSEDELAY 5  //How often the loop runs
-#define AVERAGEFACTOR 20  //How many captures per movement check
+#define RESPONSEDELAY 1  //How often the loop runs
+#define AVERAGEFACTOR 1  //How many captures per movement check
 #define CALIBRATIONFACTOR 200  //How many captures for calibration
-#define DEADZONE 200  //How far before movement registered
-#define MAINBUTTONPIN 2 //Pin for main button
-#define SCROLLBUTTONPIN 3 //Pin for scroll button
+#define DEADZONE 35  //How far before movement registered
+#define MAINBUTTONPIN 5 //Pin for main button
+#define SCROLLBUTTONPIN 6 //Pin for scroll button
 
 //Setup up a struct to pass the data
 typedef struct data
@@ -58,6 +58,7 @@ void setup()
   DEBUG_PRINTLN("Before first calibration");
   //Calibrate Accelerometer
   calibrated = averageLocation();
+  DEBUG_PRINT("Calibrated X = ");DEBUG_PRINT(calibrated.x);DEBUG_PRINT(" Calibrated Y = ");DEBUG_PRINTLN(calibrated.y);
   
   //Start bluetooth
   initializeBluefruit();
@@ -99,6 +100,7 @@ void loop()
   checkMovement(xDistance, yDistance);
   xDistance = xDistance * RANGE;
   yDistance = yDistance * RANGE;
+  DEBUG_PRINT("Checked X = ");DEBUG_PRINT(xDistance);DEBUG_PRINT(" Checked Y = ");DEBUG_PRINTLN(yDistance);
 
   //If not zero move
   if ((xDistance != 0) || (yDistance != 0))
@@ -109,6 +111,7 @@ void loop()
       String distance = convertMovement(xDistance,yDistance);  //Convert movement to string
       ble.print("AT+BleHidMouseMove=");  //Move Mouse
       ble.println(distance);
+      DEBUG_PRINTLN(distance);
     }
     //If in scroll mode
     else
@@ -119,6 +122,7 @@ void loop()
     }
   }
   
+  //ble.print("AT+BleHidMouseMove=7,7");
   delay(RESPONSEDELAY);
 }
 
@@ -128,12 +132,12 @@ bool readRadio()
   {
     //memcpy(&receivedLocation, rxbuf, sizeof(receivedLocation));  //copy the payload to location 
     receivedLocation = (struct data *)rxbuf; 
-    DEBUG_PRINT("Received X = ");DEBUG_PRINT(receivedLocation->x);DEBUG_PRINT(" Received Y = ");DEBUG_PRINTLN(receivedLocation->y);
+    //DEBUG_PRINT("Received X = ");DEBUG_PRINT(receivedLocation->x);DEBUG_PRINT(" Received Y = ");DEBUG_PRINTLN(receivedLocation->y);
     return true;
   }  
   else
   {
-    DEBUG_PRINTLN("readRadio failed");
+    //DEBUG_PRINTLN("readRadio failed");
     return false;
   }  
   
@@ -141,7 +145,7 @@ bool readRadio()
 
 data averageLocation()
 {
-  DEBUG_PRINTLN("Start of averageLocation");
+  //DEBUG_PRINTLN("Start of averageLocation");
   long total[] = {0,0};  //Place to store the totals
   data average; 
   
@@ -153,7 +157,7 @@ data averageLocation()
       total[1] = receivedLocation->y;
       i++;
     }
-    
+    delay(75);
   }
 
   average.x = total[0] / AVERAGEFACTOR;  //Average the x axis
@@ -167,8 +171,10 @@ void checkMovement(int &x, int &y)
   data checkLocation = averageLocation();
   long difference[] = {0,0};  //Place to store the difference between current location and resting location
 
+  DEBUG_PRINT("CheckMovement X = ");DEBUG_PRINT(checkLocation.x);DEBUG_PRINT(" CheckMovement Y = ");DEBUG_PRINTLN(checkLocation.y);
   difference[0] = checkLocation.x - calibrated.x;
   difference[1] = checkLocation.y - calibrated.y;
+  DEBUG_PRINT("Difference X = ");DEBUG_PRINT(difference[0]);DEBUG_PRINT(" Difference Y = ");DEBUG_PRINTLN(difference[1]);
 
   //Check x axis for movement
   if (abs(difference[0]) > DEADZONE)  //Movement greater than deadzone

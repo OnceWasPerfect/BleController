@@ -3,7 +3,7 @@
 #include "Adafruit_BluefruitLE_SPI.h"
 #include "BluefruitConfig.h"
 
-#define MY_DEBUG 0
+#define MY_DEBUG 1
 
 Adafruit_BluefruitLE_SPI ble(BLUEFRUIT_SPI_CS, BLUEFRUIT_SPI_IRQ, BLUEFRUIT_SPI_RST);
 
@@ -23,7 +23,7 @@ void initializeBluefruit (void) {
     FATAL(F("NO BLE?"));
   }
   //Rename device
-  if (! ble.sendCommandCheckOK("AT+GAPDEVNAME=Controller Input" ) ) {
+  if (! ble.sendCommandCheckOK("AT+GAPDEVNAME=Controller" ) ) {
     FATAL(F("err:rename fail"));
   }
   //Enable HID keyboard
@@ -34,6 +34,8 @@ void initializeBluefruit (void) {
   if (! ble.reset() ) {
     FATAL(F("err:SW reset"));
   }
+
+  //ble.factoryReset();
 
 }
 
