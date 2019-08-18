@@ -10,11 +10,10 @@
                 "C:\\Users\\oncew\\Documents\\Arduino\\libraries\\**",
                 "C:\\Program Files (x86)\\Arduino\\**",
                 "C:\\Users\\oncew\\AppData\\Local\\Arduino15\\packages\\adafruit\\hardware\\nrf52\\0.12.0\\**",
-                "C:\\Users\\oncew\\AppData\\Local\\Arduino15\\packages\\adafruit\\tools\\**"
+                "C:\\Users\\oncew\\AppData\\Local\\Arduino15\\packages\\adafruit\\tools\\**",
+                "${workspaceRoot}"
             ],
-            "forcedInclude": [
-                "C:\\Program Files (x86)\\Arduino\\hardware\\arduino\\avr\\cores\\arduino\\Arduino.h"
-            ]
+            "forcedInclude": []
         }
     ],
     "version": 4

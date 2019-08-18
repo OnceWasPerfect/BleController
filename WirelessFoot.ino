@@ -4,7 +4,7 @@
 #include <SPI.h>  //SPI hardware library
 
 //Debug setup
-#define DEBUG //comment out to disable debug
+//#define DEBUG //comment out to disable debug
 #ifdef DEBUG
  #define DEBUG_PRINT(x)     Serial.print (x)
  #define DEBUG_PRINTLN(x)  Serial.println (x)
@@ -15,15 +15,14 @@
  #define DEBUG_BEGIN(x)
 #endif
 
+#define AVERAGEFACTOR 20  //How many samples to average for a location
+
 //Setup up a struct to pass the data
-typedef struct data
+typedef struct locationData
 {
   int x;  //Will hold the x axis info
   int y;  //Will hold the y axis info
 };
-data location;  //create data object
-
-byte tx_buf[sizeof(location)] = {0};  //buffer to send location
 
 //Accelerometer setup
 Adafruit_LIS3DH lis = Adafruit_LIS3DH();  //Create acc object
@@ -41,17 +40,35 @@ void setup()
 
 void loop()
 {
-  //Get new accelerometer reading
-  lis.read();
+  locationData location;  //Object to hold location data
 
-  //Stick in location object
-  location.x = lis.x;
-  location.y = lis.y;
+  location = averageLocation();  //Average the sensor data and stick it in location
 
+  //Setup for radio send
+  byte tx_buf[sizeof(location)] = {0};  //buffer to send location
   memcpy(tx_buf, &location, sizeof(location));  //copy location to transmit buffer
 
   //Send location object
   nrf24.send((uint8_t *)tx_buf, sizeof(location));
   nrf24.waitPacketSent();
+}
+
+locationData averageLocation()
+{
+  locationData average;
+  long total[] = {0,0};  //Long to hold the running total
+
+  for (int i = 0; i < AVERAGEFACTOR; i++)  //take AVERAGEFACTOR samples
+  {
+    lis.read();  //Get new data from sensor
+
+    total[0] += lis.x;  //Running total of x locations
+    total[1] += lis.y;  //Running total of y locations
+  }
+
+  average.x = total[0] / AVERAGEFACTOR;  //Average the x location
+  average.y = total[1] / AVERAGEFACTOR;  //Average the y location
+
+  return average; //Return the average as a location
 }
   
