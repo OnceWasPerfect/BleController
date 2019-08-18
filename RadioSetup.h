@@ -2,7 +2,7 @@
 #include <RH_NRF24.h>
 
 //Debug setup
-#define DEBUG //comment out to disable debug
+//#define DEBUG //comment out to disable debug
 #ifdef DEBUG
  #define DEBUG_PRINT(x)     Serial.print (x)
  #define DEBUG_PRINTLN(x)  Serial.println (x)

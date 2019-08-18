@@ -5,7 +5,7 @@
 #include <SPI.h>
 
 //Debug setup
-#define DEBUG //comment out to disable debug
+//#define DEBUG //comment out to disable debug
 #ifdef DEBUG
  #define DEBUG_PRINT(x)     Serial.print (x)
  #define DEBUG_PRINTLN(x)  Serial.println (x)
@@ -17,21 +17,19 @@
 #endif
 
 #define RANGE 7  //How far the mouse moves
-#define RESPONSEDELAY 1  //How often the loop runs
-#define AVERAGEFACTOR 1  //How many captures per movement check
-#define CALIBRATIONFACTOR 200  //How many captures for calibration
-#define DEADZONE 35  //How far before movement registered
+#define RESPONSEDELAY 5  //How often the loop runs
+#define DEADZONE 200  //How far before movement registered
 #define MAINBUTTONPIN 5 //Pin for main button
 #define SCROLLBUTTONPIN 6 //Pin for scroll button
 
 //Setup up a struct to pass the data
-typedef struct data
+typedef struct locationData
 {
   int x;  //Will hold the x axis info
   int y;  //Will hold the y axis info
 };
-data *receivedLocation;  //create data object
-data calibrated;  //hold resting position
+locationData *receivedLocation;  //create data object
+locationData calibrated;  //hold resting position
 
 //Button setup
 PushButton mainButton(MAINBUTTONPIN);  //Main button
@@ -52,16 +50,15 @@ void setup()
   scrollButton.setActiveLogic(LOW);  //Make button active low
   mainButton.setActiveLogic(LOW);  //Make button active low
   
+  //Start bluetooth
+  initializeBluefruit();
+
   //Setup radio
   radioSetup();
 
   DEBUG_PRINTLN("Before first calibration");
   //Calibrate Accelerometer
-  calibrated = averageLocation();
-  DEBUG_PRINT("Calibrated X = ");DEBUG_PRINT(calibrated.x);DEBUG_PRINT(" Calibrated Y = ");DEBUG_PRINTLN(calibrated.y);
-  
-  //Start bluetooth
-  initializeBluefruit();
+  calibrate();
 }
 
 void loop()
@@ -78,7 +75,7 @@ void loop()
   //Check for button events
   if (scrollButton.isActive() && mainButton.isActive())  //Click both to calibrate
   {
-    calibrated = averageLocation();  //Reset resting position
+    calibrate();
   }
   else
   {
@@ -131,7 +128,7 @@ bool readRadio()
   if(nrf24.recv(rxbuf, &rxbuflen)) //Receive the radio payload
   {
     //memcpy(&receivedLocation, rxbuf, sizeof(receivedLocation));  //copy the payload to location 
-    receivedLocation = (struct data *)rxbuf; 
+    receivedLocation = (struct locationData *)rxbuf; 
     //DEBUG_PRINT("Received X = ");DEBUG_PRINT(receivedLocation->x);DEBUG_PRINT(" Received Y = ");DEBUG_PRINTLN(receivedLocation->y);
     return true;
   }  
@@ -143,34 +140,22 @@ bool readRadio()
   
 }
 
-data averageLocation()
-{
-  //DEBUG_PRINTLN("Start of averageLocation");
-  long total[] = {0,0};  //Place to store the totals
-  data average; 
-  
-  for (int i = 0; i < AVERAGEFACTOR;)
-  {
-    if(readRadio())
-    {
-      total[0] = receivedLocation->x;
-      total[1] = receivedLocation->y;
-      i++;
-    }
-    delay(75);
-  }
-
-  average.x = total[0] / AVERAGEFACTOR;  //Average the x axis
-  average.y = total[1] / AVERAGEFACTOR;  //Average the y axis
-
-  return average;
-}
-
 void checkMovement(int &x, int &y)
 {
-  data checkLocation = averageLocation();
+  while(!readRadio())  //Don't read bad data
+  {
+    DEBUG_PRINTLN("Bad readRadio, exiting checkMovement");
+  }
+
+  locationData checkLocation;  //Place to store current location
+
+  //Take the received location and stick it in check location
+  checkLocation.x = receivedLocation->x;  
+  checkLocation.y = receivedLocation->y;
+
   long difference[] = {0,0};  //Place to store the difference between current location and resting location
 
+  //Compare the new location with the calibrated location
   DEBUG_PRINT("CheckMovement X = ");DEBUG_PRINT(checkLocation.x);DEBUG_PRINT(" CheckMovement Y = ");DEBUG_PRINTLN(checkLocation.y);
   difference[0] = checkLocation.x - calibrated.x;
   difference[1] = checkLocation.y - calibrated.y;
@@ -209,6 +194,19 @@ void checkMovement(int &x, int &y)
   {
     y = 0;
   }
+}
+
+void calibrate()
+{
+  while(!readRadio())  //don't read bad data
+  {
+    DEBUG_PRINTLN("Bad initial calibration");
+  }
+
+  //Store location in calibrated
+  calibrated.x = receivedLocation->x;
+  calibrated.y = receivedLocation->y;
+  DEBUG_PRINT("Calibrated X = ");DEBUG_PRINT(calibrated.x);DEBUG_PRINT(" Calibrated Y = ");DEBUG_PRINTLN(calibrated.y);
 }
 
 //Convert to string for ble
