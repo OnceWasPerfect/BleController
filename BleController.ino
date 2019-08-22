@@ -5,7 +5,7 @@
 #include <SPI.h>
 
 //Debug setup
-//#define DEBUG //comment out to disable debug
+#define DEBUG //comment out to disable debug
 #ifdef DEBUG
  #define DEBUG_PRINT(x)     Serial.print (x)
  #define DEBUG_PRINTLN(x)  Serial.println (x)
@@ -119,7 +119,7 @@ void loop()
     }
   }
   
-  //ble.print("AT+BleHidMouseMove=7,7");
+  checkConnection();
   delay(RESPONSEDELAY);
 }
 
@@ -145,6 +145,7 @@ void checkMovement(int &x, int &y)
   while(!readRadio())  //Don't read bad data
   {
     DEBUG_PRINTLN("Bad readRadio, exiting checkMovement");
+    delay(15);
   }
 
   locationData checkLocation;  //Place to store current location
@@ -216,4 +217,12 @@ String convertMovement(int x, int y)
   movement += ",";  //Add the comma
   movement += String(y);  //Convert yDistance to string and add it to the string
   return movement;
+}
+
+void checkConnection()
+{
+  String connected = "1";
+
+  connected = ble.println("AT+GAPCONNECTABLE?");
+  DEBUG_PRINTLN(connected);
 }

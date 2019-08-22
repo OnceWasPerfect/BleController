@@ -23,6 +23,8 @@ void initializeBluefruit (void) {
     FATAL(F("NO BLE?"));
   }
   delay(50);
+
+  //ble.factoryReset();
   //Rename device
   if (! ble.sendCommandCheckOK("AT+GAPDEVNAME=Controller" ) ) {
     FATAL(F("err:rename fail"));
@@ -33,16 +35,22 @@ void initializeBluefruit (void) {
     FATAL(F("err:enable Kb"));
   }
   delay(50);
+
+  // Set GAP intervals for higher performance
+  // In order, min connection interval (ms), max connection interval (ms), fast advertising interval (ms), fast advertising timeout (s), low power advertising interval (ms)
+  if (!ble.sendCommandCheckOK(F("AT+GAPINTERVALS=10,50,,"))) {
+      FATAL(F("Could not set GAP interval!"));
+  }
+  delay(50);
+
   //Add or remove service requires a reset
   if (! ble.reset() ) {
     FATAL(F("err:SW reset"));
   }
   delay(50);
 
-  //ble.sendCommandCheckOK("AT+GAPCONNECTABLE=1");
-
-  //ble.factoryReset();
-
+  ble.echo(false);
+  //ble.sendCommandCheckOK(F("AT+GAPCONNECTABLE=1"));
 }
 
 
