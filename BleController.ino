@@ -145,7 +145,7 @@ void checkMovement(int &x, int &y)
   while(!readRadio())  //Don't read bad data
   {
     DEBUG_PRINTLN("Bad readRadio, exiting checkMovement");
-    delay(15);
+    delay(50);
   }
 
   locationData checkLocation;  //Place to store current location
